@@ -45,7 +45,7 @@ const sidebars = {
           ],
       },
   ],
-    /*Cpp: [
+    Cpp: [
         {
             type: 'category',
             label: '语言基础',
@@ -56,9 +56,9 @@ const sidebars = {
                 },
             ],
         },
-    ],*/
+    ],
     tools: [
-        {
+        /*{
             type: 'category',
             label: 'git',
             items: [
@@ -67,7 +67,7 @@ const sidebars = {
                     dirName: 'tools/git'
                 },
             ],
-        },
+        },*/
         {
             type: 'category',
             label: 'linux',
