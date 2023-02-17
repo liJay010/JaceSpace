@@ -91,11 +91,12 @@ const config = {
                         position: "left",
                     },
                     {
-                        to: "/docs/leetcode/代码随想录数组链表",
+                        to: "/docs/leetcode/随想录/数组链表",
                         activeBasePath: '/docs/leetcode',
                         label: "leetcode",
                         position: "left",
                     },
+
 
                     {
                         href: 'https://github.com/liJay010',
