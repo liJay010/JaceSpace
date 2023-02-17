@@ -85,8 +85,8 @@ const config = {
                 },
                 items: [
                     {
-                        to: "/docs/Cpp/C++内存管理",
-                        activeBasePath: '/docs/Cpp',
+                        to: "/docs/Cpp/语言基础/基础语法入门",
+                        activeBasePath: '/docs/Cpp/语言基础',
                         label: "Cpp",
                         position: "left",
                     },
