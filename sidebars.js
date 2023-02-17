@@ -58,7 +58,7 @@ const sidebars = {
         },
     ],
     tools: [
-        /*{
+        {
             type: 'category',
             label: 'git',
             items: [
@@ -67,7 +67,7 @@ const sidebars = {
                     dirName: 'tools/git'
                 },
             ],
-        },*/
+        },
         {
             type: 'category',
             label: 'linux',
