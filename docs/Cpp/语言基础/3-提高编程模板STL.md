@@ -1,8 +1,8 @@
-# C++提高编程
+# cpp提高编程
 
 
 
-* 本阶段主要针对C++==泛型编程==和==STL==技术做详细讲解，探讨C++更深层的使用
+* 本阶段主要针对cpp==泛型编程==和==STL==技术做详细讲解，探讨cpp更深层的使用
 
 
 
@@ -59,10 +59,10 @@ PPT模板：
 
 
 
-* C++另一种编程思想称为 ==泛型编程== ，主要利用的技术就是模板
+* cpp另一种编程思想称为 ==泛型编程== ，主要利用的技术就是模板
 
 
-* C++提供两种模板机制:**函数模板**和**类模板** 
+* cpp提供两种模板机制:**函数模板**和**类模板** 
 
 
 
@@ -76,7 +76,7 @@ PPT模板：
 
 **语法：** 
 
-```C++
+```cpp
 template<typename T>
 函数声明或定义
 ```
@@ -93,7 +93,7 @@ T    ---   通用的数据类型，名称可以替换，通常为大写字母
 
 **示例：**
 
-```C++
+```cpp
 
 //交换整型函数
 void swapInt(int& a, int& b) {
@@ -174,7 +174,7 @@ int main() {
 
 **示例：**
 
-```C++
+```cpp
 //利用模板提供通用的交换函数
 template<class T>
 void mySwap(T& a, T& b)
@@ -247,7 +247,7 @@ int main() {
 
 示例：
 
-```C++
+```cpp
 //交换的函数模板
 template<typename T>
 void mySwap(T &a, T&b)
@@ -341,7 +341,7 @@ int main() {
 
 **示例：**
 
-```C++
+```cpp
 //普通函数
 int myAdd01(int a, int b)
 {
@@ -408,7 +408,7 @@ int main() {
 
 **示例：**
 
-```C++
+```cpp
 //普通函数与函数模板调用规则
 void myPrint(int a, int b)
 {
@@ -480,7 +480,7 @@ int main() {
 
 **例如：**
 
-```C++
+```cpp
 	template<class T>
 	void f(T a, T b)
 	{ 
@@ -494,7 +494,7 @@ int main() {
 
 再例如：
 
-```C++
+```cpp
 	template<class T>
 	void f(T a, T b)
 	{ 
@@ -506,13 +506,13 @@ int main() {
 
 
 
-因此C++为了解决这种问题，提供模板的重载，可以为这些**特定的类型**提供**具体化的模板**
+因此cpp为了解决这种问题，提供模板的重载，可以为这些**特定的类型**提供**具体化的模板**
 
 
 
 **示例：**
 
-```C++
+```cpp
 #include<iostream>
 using namespace std;
 
@@ -629,7 +629,7 @@ int main() {
 
 **语法：** 
 
-```c++
+```cpp
 template<typename T>
 类
 ```
@@ -646,7 +646,7 @@ T    ---   通用的数据类型，名称可以替换，通常为大写字母
 
 **示例：**
 
-```C++
+```cpp
 #include <string>
 //类模板
 template<class NameType, class AgeType> 
@@ -710,7 +710,7 @@ int main() {
 
 **示例：**
 
-```C++
+```cpp
 #include <string>
 //类模板
 template<class NameType, class AgeType = int> 
@@ -788,7 +788,7 @@ int main() {
 
 **示例：**
 
-```C++
+```cpp
 class Person1
 {
 public:
@@ -869,7 +869,7 @@ int main() {
 
 **示例：**
 
-```C++
+```cpp
 #include <string>
 //类模板
 template<class NameType, class AgeType = int> 
@@ -969,14 +969,14 @@ int main() {
 
 **示例：**
 
-```C++
+```cpp
 template<class T>
 class Base
 {
 	T m;
 };
 
-//class Son:public Base  //错误，c++编译需要给子类分配内存，必须知道父类中T的类型才可以向下继承
+//class Son:public Base  //错误，cpp编译需要给子类分配内存，必须知道父类中T的类型才可以向下继承
 class Son :public Base<int> //必须指定一个类型
 {
 };
@@ -1035,7 +1035,7 @@ int main() {
 
 **示例：**
 
-```C++
+```cpp
 #include <string>
 
 //类模板中成员函数类外实现
@@ -1115,7 +1115,7 @@ int main() {
 
 person.hpp中代码：
 
-```C++
+```cpp
 #pragma once
 #include <iostream>
 using namespace std;
@@ -1149,7 +1149,7 @@ void Person<T1, T2>::showPerson() {
 
 类模板分文件编写.cpp中代码
 
-```C++
+```cpp
 #include<iostream>
 using namespace std;
 
@@ -1202,7 +1202,7 @@ int main() {
 
 **示例：**
 
-```C++
+```cpp
 #include <string>
 
 //2、全局函数配合友元  类外实现 - 先做函数模板声明，下方在做函数模板定义，在做友元
@@ -1306,7 +1306,7 @@ int main() {
 
 myArray.hpp中代码
 
-```C++
+```cpp
 #pragma once
 #include <iostream>
 using namespace std;
@@ -1419,7 +1419,7 @@ private:
 
 类模板案例—数组类封装.cpp中
 
-```C++
+```cpp
 #include "myArray.hpp"
 #include <string>
 
@@ -1526,7 +1526,7 @@ int main() {
 
 * 长久以来，软件界一直希望建立一种可重复利用的东西
 
-* C++的**面向对象**和**泛型编程**思想，目的就是**复用性的提升**
+* cpp的**面向对象**和**泛型编程**思想，目的就是**复用性的提升**
 
 * 大多情况下，数据结构和算法都未能有一套标准,导致被迫从事大量重复工作
 
@@ -1646,7 +1646,7 @@ STL中最常用的容器为Vector，可以理解为数组，下面我们将学�
 
 **示例：**
 
-```C++
+```cpp
 #include <vector>
 #include <algorithm>
 
@@ -1713,7 +1713,7 @@ int main() {
 
 **示例：**
 
-```c++
+```cpp
 #include <vector>
 #include <string>
 
@@ -1802,7 +1802,7 @@ int main() {
 
 **示例：**
 
-```C++
+```cpp
 #include <vector>
 
 //容器嵌套容器
@@ -1863,7 +1863,7 @@ int main() {
 
 **本质：**
 
-* string是C++风格的字符串，而string本质上是一个类
+* string是cpp风格的字符串，而string本质上是一个类
 
 
 
@@ -1897,7 +1897,7 @@ string管理char*所分配的内存，不用担心复制越界和取值越界等
 
 **示例：**
 
-```C++
+```cpp
 #include <string>
 //string构造
 void test01()
@@ -1960,7 +1960,7 @@ int main() {
 
 **示例：**
 
-```C++
+```cpp
 //赋值
 void test01()
 {
@@ -1977,11 +1977,11 @@ void test01()
 	cout << "str3 = " << str3 << endl;
 
 	string str4;
-	str4.assign("hello c++");
+	str4.assign("hello cpp");
 	cout << "str4 = " << str4 << endl;
 
 	string str5;
-	str5.assign("hello c++",5);
+	str5.assign("hello cpp",5);
 	cout << "str5 = " << str5 << endl;
 
 
@@ -2040,7 +2040,7 @@ int main() {
 **示例：**
 
 
-```C++
+```cpp
 //字符串拼接
 void test01()
 {
@@ -2112,7 +2112,7 @@ int main() {
 
 **示例：**
 
-```C++
+```cpp
 //查找和替换
 void test01()
 {
@@ -2207,7 +2207,7 @@ int main() {
 
 **示例：**
 
-```C++
+```cpp
 //字符串比较
 void test01()
 {
@@ -2264,7 +2264,7 @@ string中单个字符存取方式有两种
 
 **示例：**
 
-```C++
+```cpp
 void test01()
 {
 	string str = "hello world";
@@ -2328,7 +2328,7 @@ int main() {
 
 **示例：**
 
-```C++
+```cpp
 //字符串插入和删除
 void test01()
 {
@@ -2379,7 +2379,7 @@ int main() {
 
 **示例：**
 
-```C++
+```cpp
 //子串
 void test01()
 {
@@ -2470,7 +2470,7 @@ int main() {
 **示例：**
 
 
-```C++
+```cpp
 #include <vector>
 
 void printVector(vector<int>& v) {
@@ -2544,7 +2544,7 @@ int main() {
 
 **示例：**
 
-```C++
+```cpp
 #include <vector>
 
 void printVector(vector<int>& v) {
@@ -2627,7 +2627,7 @@ int main() {
 **示例：**
 
 
-```C++
+```cpp
 #include <vector>
 
 void printVector(vector<int>& v) {
@@ -2720,7 +2720,7 @@ int main() {
 
 **示例：**
 
-```C++
+```cpp
 
 #include <vector>
 
@@ -2816,7 +2816,7 @@ int main() {
 
 **示例：**
 
-```C++
+```cpp
 #include <vector>
 
 void test01()
@@ -2887,7 +2887,7 @@ int main() {
 
 **示例：**
 
-```C++
+```cpp
 #include <vector>
 
 void printVector(vector<int>& v) {
@@ -2982,7 +2982,7 @@ int main() {
 
 **示例：**
 
-```C++
+```cpp
 #include <vector>
 
 void test01()
@@ -3082,7 +3082,7 @@ deque内部有个**中控器**，维护每段缓冲区中的内容，缓冲区�
 
 **示例：**
 
-```C++
+```cpp
 #include <deque>
 
 void printDeque(const deque<int>& d) 
@@ -3156,7 +3156,7 @@ int main() {
 
 **示例：**
 
-```C++
+```cpp
 #include <deque>
 
 void printDeque(const deque<int>& d) 
@@ -3237,7 +3237,7 @@ int main() {
 
 **示例：**
 
-```C++
+```cpp
 #include <deque>
 
 void printDeque(const deque<int>& d) 
@@ -3341,7 +3341,7 @@ int main() {
 
 **示例：**
 
-```C++
+```cpp
 #include <deque>
 
 void printDeque(const deque<int>& d) 
@@ -3470,7 +3470,7 @@ int main() {
 
 **示例：**
 
-```C++
+```cpp
 #include <deque>
 
 void printDeque(const deque<int>& d) 
@@ -3555,7 +3555,7 @@ int main() {
 
 **示例：**
 
-```C++
+```cpp
 #include <deque>
 #include <algorithm>
 
@@ -3629,7 +3629,7 @@ int main() {
 
 **示例代码：**
 
-```C++
+```cpp
 //选手类
 class Person
 {
@@ -3812,7 +3812,7 @@ int main() {
 
 **示例：**
 
-```C++
+```cpp
 #include <stack>
 
 //栈容器常用接口
@@ -3933,7 +3933,7 @@ int main() {
 
 **示例：**
 
-```C++
+```cpp
 #include <queue>
 #include <string>
 class Person
@@ -4088,7 +4088,7 @@ List有一个重要的性质，插入操作和删除操作都不会造成原有l
 
 **示例：**
 
-```C++
+```cpp
 #include <list>
 
 void printList(const list<int>& L) {
@@ -4160,7 +4160,7 @@ int main() {
 
 **示例：**
 
-```C++
+```cpp
 #include <list>
 
 void printList(const list<int>& L) {
@@ -4277,7 +4277,7 @@ int main() {
 
 **示例：**
 
-```C++
+```cpp
 #include <list>
 
 void printList(const list<int>& L) {
@@ -4369,7 +4369,7 @@ int main() {
 
 **示例：**
 
-```C++
+```cpp
 #include <list>
 
 void printList(const list<int>& L) {
@@ -4482,7 +4482,7 @@ int main() {
 
 **示例：**
 
-```C++
+```cpp
 #include <list>
 
 //数据存取
@@ -4551,7 +4551,7 @@ int main() {
 
 **示例：**
 
-```C++
+```cpp
 void printList(const list<int>& L) {
 
 	for (list<int>::const_iterator it = L.begin(); it != L.end(); it++) {
@@ -4622,7 +4622,7 @@ int main() {
 
 **示例：**
 
-```C++
+```cpp
 #include <list>
 #include <string>
 class Person {
@@ -4769,7 +4769,7 @@ int main() {
 
 **示例：**
 
-```C++
+```cpp
 #include <set>
 
 void printSet(set<int> & s)
@@ -4845,7 +4845,7 @@ int main() {
 
 **示例：**
 
-```C++
+```cpp
 #include <set>
 
 void printSet(set<int> & s)
@@ -4966,7 +4966,7 @@ int main() {
 
 **示例：**
 
-```C++
+```cpp
 #include <set>
 
 void printSet(set<int> & s)
@@ -5047,7 +5047,7 @@ int main() {
 
 **示例：**
 
-```C++
+```cpp
 #include <set>
 
 //查找和统计
@@ -5128,7 +5128,7 @@ int main() {
 
 **示例：**
 
-```C++
+```cpp
 #include <set>
 
 //set和multiset区别
@@ -5208,7 +5208,7 @@ int main() {
 
 **示例：**
 
-```C++
+```cpp
 #include <string>
 
 //对组创建
@@ -5265,7 +5265,7 @@ int main() {
 
 **示例一**   set存放内置数据类型
 
-```C++
+```cpp
 #include <set>
 
 class MyCompare 
@@ -5320,7 +5320,7 @@ int main() {
 
 **示例二** set存放自定义数据类型
 
-```C++
+```cpp
 #include <set>
 #include <string>
 
@@ -5445,7 +5445,7 @@ map和multimap**区别**：
 
 **示例：**
 
-```C++
+```cpp
 #include <map>
 
 void printMap(map<int,int>&m)
@@ -5517,7 +5517,7 @@ int main() {
 
 **示例：**
 
-```C++
+```cpp
 #include <map>
 
 void printMap(map<int,int>&m)
@@ -5621,7 +5621,7 @@ int main() {
 
 **示例：**
 
-```C++
+```cpp
 #include <map>
 
 void printMap(map<int,int>&m)
@@ -5707,7 +5707,7 @@ int main() {
 
 **示例：**
 
-```C++
+```cpp
 #include <map>
 
 //查找和统计
@@ -5784,7 +5784,7 @@ int main() {
 
 **示例：**
 
-```C++
+```cpp
 #include <map>
 
 class MyCompare {
@@ -5864,7 +5864,7 @@ int main() {
 
 **案例代码：**
 
-```C++
+```cpp
 #include<iostream>
 using namespace std;
 #include <vector>
@@ -6026,7 +6026,7 @@ int main() {
 
 **示例:**
 
-```C++
+```cpp
 #include <string>
 
 //1、函数对象在使用时，可以像普通函数那样调用, 可以有参数，可以有返回值
@@ -6079,7 +6079,7 @@ void doPrint(MyPrint &mp , string test)
 void test03()
 {
 	MyPrint myPrint;
-	doPrint(myPrint, "Hello C++");
+	doPrint(myPrint, "Hello cpp");
 }
 
 int main() {
@@ -6130,7 +6130,7 @@ int main() {
 
 **示例：**
 
-```C++
+```cpp
 #include <vector>
 #include <algorithm>
 
@@ -6185,7 +6185,7 @@ int main() {
 
 **示例：**
 
-```C++
+```cpp
 #include <vector>
 #include <algorithm>
 //二元谓词
@@ -6304,7 +6304,7 @@ int main() {
 
 **示例：**
 
-```C++
+```cpp
 #include <functional>
 //negate
 void test01()
@@ -6362,7 +6362,7 @@ int main() {
 
 **示例：**
 
-```C++
+```cpp
 #include <functional>
 #include <vector>
 #include <algorithm>
@@ -6441,7 +6441,7 @@ int main() {
 
 **示例：**
 
-```C++
+```cpp
 #include <vector>
 #include <functional>
 #include <algorithm>
@@ -6545,7 +6545,7 @@ int main() {
 
 **示例：**
 
-```C++
+```cpp
 #include <algorithm>
 #include <vector>
 
@@ -6623,7 +6623,7 @@ int main() {
 
 **示例：**
 
-```C++
+```cpp
 #include<vector>
 #include<algorithm>
 
@@ -6731,7 +6731,7 @@ int main() {
 
 **示例：**
 
-```C++
+```cpp
 #include <algorithm>
 #include <vector>
 #include <string>
@@ -6838,7 +6838,7 @@ void test02() {
 
 **示例：**
 
-```C++
+```cpp
 #include <algorithm>
 #include <vector>
 #include <string>
@@ -6970,7 +6970,7 @@ int main() {
 
 **示例：**
 
-```C++
+```cpp
 #include <algorithm>
 #include <vector>
 
@@ -7034,7 +7034,7 @@ void test01()
 
 **示例：**
 
-```C++
+```cpp
 #include <algorithm>
 #include <vector>
 
@@ -7104,7 +7104,7 @@ int main() {
 
 **示例：**
 
-```C++
+```cpp
 #include <algorithm>
 #include <vector>
 
@@ -7222,7 +7222,7 @@ int main() {
 
 **示例：**
 
-```C++
+```cpp
 #include <algorithm>
 #include <vector>
 
@@ -7366,7 +7366,7 @@ int main() {
 
 **示例：**
 
-```c++
+```cpp
 #include <algorithm>
 #include <vector>
 
@@ -7440,7 +7440,7 @@ int main() {
 
 **示例：**
 
-```c++
+```cpp
 #include <algorithm>
 #include <vector>
 #include <ctime>
@@ -7523,7 +7523,7 @@ int main() {
 
 **示例：**
 
-```c++
+```cpp
 #include <algorithm>
 #include <vector>
 
@@ -7599,7 +7599,7 @@ int main() {
 
 **示例：**
 
-```c++
+```cpp
 #include <algorithm>
 #include <vector>
 
@@ -7692,7 +7692,7 @@ int main() {
 
 **示例：**
 
-```c++
+```cpp
 #include <algorithm>
 #include <vector>
 
@@ -7771,7 +7771,7 @@ int main() {
 
 **示例：**
 
-```c++
+```cpp
 #include <algorithm>
 #include <vector>
 
@@ -7856,7 +7856,7 @@ int main() {
 
 **示例：**
 
-```c++
+```cpp
 #include <algorithm>
 #include <vector>
 
@@ -7941,7 +7941,7 @@ int main() {
 
 **示例：**
 
-```c++
+```cpp
 #include <algorithm>
 #include <vector>
 
@@ -8047,7 +8047,7 @@ int main() {
 
 **示例：**
 
-```c++
+```cpp
 #include <numeric>
 #include <vector>
 void test01()
@@ -8100,7 +8100,7 @@ int main() {
 
 **示例：**
 
-```c++
+```cpp
 #include <numeric>
 #include <vector>
 #include <algorithm>
@@ -8188,7 +8188,7 @@ int main() {
 
 **示例：**
 
-```C++
+```cpp
 #include <vector>
 #include <algorithm>
 
@@ -8277,7 +8277,7 @@ int main() {
 
 **示例：**
 
-```C++
+```cpp
 #include <vector>
 #include <algorithm>
 
@@ -8360,7 +8360,7 @@ int main() {
 
 **示例：**
 
-```C++
+```cpp
 #include <vector>
 #include <algorithm>
 
