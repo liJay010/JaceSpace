@@ -85,18 +85,6 @@ const config = {
                 },
                 items: [
                     {
-                        to: "/docs/Cpp/语言基础/基础入门语法",
-                        activeBasePath: '/docs/Cpp/语言基础',
-                        label: "Cpp",
-                        position: "left",
-                    },
-                    {
-                        to: "/docs/tools/linux/Linux",
-                        activeBasePath: '/docs/tools/linux',
-                        label: "tools",
-                        position: "left",
-                    },
-                    {
                         to: "/docs/leetcode/随想录/数组链表",
                         activeBasePath: '/docs/leetcode/随想录',
                         label: "leetcode",
