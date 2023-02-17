@@ -90,66 +90,6 @@ const config = {
                         label: "C++",
                         position: "left",
                     },
-                    {
-                        to: "/docs/C++/2.代码随想录哈希表",
-                        activeBasePath: '/docs/C++',
-                        label: "C++",
-                        position: "left",
-                    },
-                    {
-                        to: "/docs/C++/3.代码随想录字符串",
-                        activeBasePath: '/docs/C++',
-                        label: "C++",
-                        position: "left",
-                    },
-                    {
-                        to: "/docs/C++/4.代码随想录栈和队列",
-                        activeBasePath: '/docs/C++',
-                        label: "C++",
-                        position: "left",
-                    },
-                    {
-                        to: "/docs/C++/5.代码随想录二叉数",
-                        activeBasePath: '/docs/C++',
-                        label: "C++",
-                        position: "left",
-                    },
-                    {
-                        to: "/docs/C++/6.代码随想录回溯算法",
-                        activeBasePath: '/docs/C++',
-                        label: "C++",
-                        position: "left",
-                    },
-                    {
-                        to: "/docs/C++/7.代码随想录贪心算法",
-                        activeBasePath: '/docs/C++',
-                        label: "C++",
-                        position: "left",
-                    },
-                    {
-                        to: "/docs/C++/8.代码随想录动态规划",
-                        activeBasePath: '/docs/C++',
-                        label: "C++",
-                        position: "left",
-                    },
-                    {
-                        to: "/docs/C++/9.代码随想录动态规划2",
-                        activeBasePath: '/docs/C++',
-                        label: "C++",
-                        position: "left",
-                    },
-                    {
-                        to: "/docs/C++/10.代码随想录单调栈",
-                        activeBasePath: '/docs/C++',
-                        label: "C++",
-                        position: "left",
-                    },
-                    {
-                        to: "/docs/C++/first",
-                        activeBasePath: '/docs/C++',
-                        label: "C++",
-                        position: "left",
-                    },
 
                     {
                         href: 'https://github.com/liJay010',
