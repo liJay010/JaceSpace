@@ -97,6 +97,12 @@ const config = {
                         label: "Cpp学习",
                         position: "left",
                     },
+                    {
+                        to: "/docs/tools/Git",
+                        activeBasePath: '/docs/tools/',
+                        label: "tools",
+                        position: "left",
+                    },
 
                     {
                         href: 'https://github.com/liJay010',
