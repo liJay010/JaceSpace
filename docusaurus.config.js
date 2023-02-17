@@ -91,6 +91,12 @@ const config = {
                         position: "left",
                     },*/
                     {
+                        to: "/docs/tools/git/Git",
+                        activeBasePath: '/docs/tools/git/',
+                        label: "tools",
+                        position: "left",
+                    },
+                    {
                         to: "/docs/leetcode/随想录/数组链表",
                         activeBasePath: '/docs/leetcode',
                         label: "leetcode",
