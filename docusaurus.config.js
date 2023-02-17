@@ -91,8 +91,8 @@ const config = {
                         position: "left",
                     },
                     {
-                        to: "/docs/tools/git/Git",
-                        activeBasePath: '/docs/tools/git/',
+                        to: "/docs/tools/linux/Linux",
+                        activeBasePath: '/docs/tools/linux',
                         label: "tools",
                         position: "left",
                     },
