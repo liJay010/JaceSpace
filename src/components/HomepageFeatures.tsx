@@ -15,7 +15,7 @@ const FeatureList: FeatureItem[] = [
     image: '/img/undraw_docusaurus_mountain.svg',
     description: (
       <>
-        Focusing on Deep learning technique for Computer Vision. Also know me as a poor Latex speaker.
+        AAAA
       </>
     ),
   },
@@ -24,7 +24,7 @@ const FeatureList: FeatureItem[] = [
     image: '/img/undraw_docusaurus_tree.svg',
     description: (
       <>
-        Using Python and C++. Learning Java and Golang.
+        Using Python and C++.
       </>
     ),
   },
@@ -33,7 +33,7 @@ const FeatureList: FeatureItem[] = [
     image: '/img/undraw_docusaurus_react.svg',
     description: (
       <>
-        A graduate student at UESTC. Study with his friends everyday.
+        A graduate student at UESTC
       </>
     ),
   },

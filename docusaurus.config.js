@@ -85,9 +85,15 @@ const config = {
                 },
                 items: [
                     {
-                        to: "/docs/Cpp/代码随想录数组链表",
+                        to: "/docs/Cpp/C++内存管理",
                         activeBasePath: '/docs/Cpp',
                         label: "Cpp",
+                        position: "left",
+                    },
+                    {
+                        to: "/docs/leetcode/代码随想录数组链表",
+                        activeBasePath: '/docs/leetcode',
+                        label: "leetcode",
                         position: "left",
                     },
 
