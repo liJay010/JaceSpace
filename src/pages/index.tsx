@@ -17,7 +17,7 @@ function HomepageHeader() {
               <div className={styles.buttons}>
                   <Link
                       className="button button--secondary button--lg"
-                      to="/docs/C++/1.代码随想录数组链表">
+                      to="/docs/Cpp/1-代码随想录数组链表">
                       ENTER
                   </Link>
               </div>
