@@ -92,7 +92,7 @@ const config = {
                     },
 
                     {
-                        to: "/docs/Cpp/语言基础/数组链表",
+                        to: "/docs/Cpp/语言基础/基础入门语法",
                         activeBasePath: '/docs/Cpp/语言基础',
                         label: "leetcode",
                         position: "left",
