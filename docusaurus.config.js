@@ -98,8 +98,8 @@ const config = {
                         position: "left",
                     },
                     {
-                        to: "/docs/tools/Git",
-                        activeBasePath: '/docs/tools/',
+                        to: "/docs/tools/Redis基础课程讲义",
+                        activeBasePath: '/docs/tools',
                         label: "tools",
                         position: "left",
                     },
