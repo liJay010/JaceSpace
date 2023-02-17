@@ -91,6 +91,12 @@ const config = {
                         position: "left",
                     },
 
+                    {
+                        to: "/docs/Cpp/语言基础/数组链表",
+                        activeBasePath: '/docs/Cpp/语言基础',
+                        label: "leetcode",
+                        position: "left",
+                    },
 
                     {
                         href: 'https://github.com/liJay010',
