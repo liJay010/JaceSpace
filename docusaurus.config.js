@@ -94,7 +94,7 @@ const config = {
                     {
                         to: "/docs/Cpp/语言基础/基础入门语法",
                         activeBasePath: '/docs/Cpp/语言基础',
-                        label: "leetcode",
+                        label: "Cpp学习",
                         position: "left",
                     },
 
