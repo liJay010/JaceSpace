@@ -85,9 +85,9 @@ const config = {
                 },
                 items: [
                     {
-                        to: "/docs/C++/1.代码随想录数组链表",
-                        activeBasePath: '/docs/C++',
-                        label: "C++",
+                        to: "/docs/Cpp/1-代码随想录数组链表",
+                        activeBasePath: '/docs/Cpp',
+                        label: "Cpp",
                         position: "left",
                     },
 
