@@ -11,25 +11,25 @@ type FeatureItem = {
 
 const FeatureList: FeatureItem[] = [
   {
-    title: 'Me as Cver',
+    title: 'This is my notebook',
     image: '/img/undraw_docusaurus_mountain.svg',
     description: (
       <>
-        AAAA
+          Welcome to my blog homepage
       </>
     ),
   },
   {
-    title: 'Me as Programmer',
+    title: 'Me as a Programmer',
     image: '/img/undraw_docusaurus_tree.svg',
     description: (
       <>
-        Using Python and C++.
+        Using Python and Cpp
       </>
     ),
   },
   {
-    title: 'Me',
+    title: 'About Me',
     image: '/img/undraw_docusaurus_react.svg',
     description: (
       <>
