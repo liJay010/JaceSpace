@@ -76,7 +76,7 @@ Lars是一个简单、易用、高性能的服务间远程调用管理、调度�
 
   集群支持高并发连接，满足海量访问量诉求
 
-![Lars-场景1](./pictures/Lars-%E5%9C%BA%E6%99%AF1.png)
+![Lars-场景1](./pictures/Lars-1.png)
 
 ### (2)、跨可用区同城容灾
 
@@ -94,7 +94,7 @@ Lars是一个简单、易用、高性能的服务间远程调用管理、调度�
 
 
 
-![Lars-场景2](./pictures/Lars-%E5%9C%BA%E6%99%AF2.png)
+![Lars-场景2](./pictures/Lars-2.png)
 
 
 
@@ -118,7 +118,7 @@ Lars是一个简单、易用、高性能的服务间远程调用管理、调度�
 
   
 
-![Lars-场景3](./pictures/Lars-%E5%9C%BA%E6%99%AF3.png)
+![Lars-场景3](./pictures/Lars-3.png)
 
 
 
@@ -149,7 +149,7 @@ Lars是一个简单、易用、高性能的服务间远程调用管理、调度�
 
 
 
-![1-Lars-总体架构设计](./pictures/1-Lars-%E6%80%BB%E4%BD%93%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1.png)
+![1-Lars-总体架构设计](./pictures/1-Lars-.png)
 
 如图，每个服务器（虚线）部署了一台LoadBalance Agent，以及多个业务服务
 
@@ -2196,7 +2196,7 @@ recv data = hello Iam client2
 
 ### 5.1 Message消息封装
 
-![7-TCP粘包问题-拆包封包过程](./pictures/7-TCP粘包问题-拆包封包过程.jpeg)
+![7-TCP粘包问题-拆包封包过程](./pictures/7-TCPn.jpeg)
 
 
 
@@ -7661,8 +7661,8 @@ conn param = I am the conn for you!
 
 1. 服务启动时，`RouteData`表被加载到`data_pointer`指向的`RouterDataMap_A`中, `temp_pointer`指向的`RouterDataMap_B`为空
 
-  		2. 服务启动后，agent发来Query for 请求某`modid/cmdid`，到其所在Thread Loop上，上读锁查询`data_pointer`指向的`RouterDataMap_A`，返回查询结果；
-  		3. 如果此`modid/cmdid`不存在，则把`agent ip+port`+`moid/cmdid`发送到Backend thread loop1的队列，让其记录到ClientMap
+    		2. 服务启动后，agent发来Query for 请求某`modid/cmdid`，到其所在Thread Loop上，上读锁查询`data_pointer`指向的`RouterDataMap_A`，返回查询结果；
+      		3. 如果此`modid/cmdid`不存在，则把`agent ip+port`+`moid/cmdid`发送到Backend thread loop1的队列，让其记录到ClientMap
 
 后台线程Backend thread每隔10s清空`temp_pointer`指向的`RouterDataMap_B`，再加载`RouteData`表内容到`temp_pointer`指向的`RouterDataMap_B`，加载成功后交换指针`data_pointer`与`temp_pointer`指针内容，于是完成了路由数据的更新.
 
