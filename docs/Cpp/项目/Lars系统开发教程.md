@@ -14186,13 +14186,13 @@ Lars的过载判定算法没有对节点调用耗时进行考虑
 
 ​		为了解决这些问题，引入一致性哈希算法。假设数据的 id 通过哈希函数转换成的哈希值范围是 2的32次幂，也就是( 0,  2^32−1) 的数字空间中。我们将这些数字头尾相连，想象成一个闭合的环形，那么一个数字 id 在计算出哈希值之后认为对应到环中的一个位置上
 
-![12-murmurHash_1](/Users/apple/Nustore%20Files/%E6%88%91%E7%9A%84%E5%9D%9A%E6%9E%9C%E4%BA%91/%E8%AF%BE%E7%A8%8B%E7%A0%94%E5%8F%91/Lars/%E8%AE%B2%E4%B9%89/pictures/12-murmurHash_1.png)
+![12-murmurHash_1](pictures/12-murmurHash_1.png)
 
 
 
 ​		接下来，想象有三台机器也处于这样一个环中，这三台机器在环中的位置根据机器 id 计算出的哈希值来决定。那么一条数据如何确定归属哪台机器呢？首先把该数据的 id 用哈希值算出哈希值，并映射到环中的相应位置，然后顺时针找寻离这个位置最近的机器，那台机器就是该数据的归属。例如，下图有一个数据 m，计算其 hash 值后映射到环上，那么他的归属就是 2 号机器.
 
-![13-murmurHash_2](/Users/apple/Nustore%20Files/%E6%88%91%E7%9A%84%E5%9D%9A%E6%9E%9C%E4%BA%91/%E8%AF%BE%E7%A8%8B%E7%A0%94%E5%8F%91/Lars/%E8%AE%B2%E4%B9%89/pictures/13-murmurHash_2.png)
+![13-murmurHash_2](pictures/13-murmurHash_2.png)
 
 
 
@@ -14204,7 +14204,7 @@ Lars的过载判定算法没有对节点调用耗时进行考虑
 
 ​		以上面的分布为例，如果 Node2（机器 2）出现故障被删除了，那么按照顺时针迁移的方法，Hash 值属于图中红色片段的所有数据将会被迁移到 Node3（机器）中，这样仅仅是红色的一段映射位置发生了变化，其它的对象没有任何的改动。如下图：
 
-![14-murmurHash_3](/Users/apple/Nustore%20Files/%E6%88%91%E7%9A%84%E5%9D%9A%E6%9E%9C%E4%BA%91/%E8%AF%BE%E7%A8%8B%E7%A0%94%E5%8F%91/Lars/%E8%AE%B2%E4%B9%89/pictures/14-murmurHash_3.png)
+![14-murmurHash_3](pictures/14-murmurHash_3.png)
 
 ##### b. 结点（机器）添加		
 
@@ -14212,7 +14212,7 @@ Lars的过载判定算法没有对节点调用耗时进行考虑
 
 ​		如果往集群中添加一个新的节点 NODE4，通过对应的哈希算法得到 KEY4，并映射到环中，如下图：
 
-![15-murmurHash_4](/Users/apple/Nustore%20Files/%E6%88%91%E7%9A%84%E5%9D%9A%E6%9E%9C%E4%BA%91/%E8%AF%BE%E7%A8%8B%E7%A0%94%E5%8F%91/Lars/%E8%AE%B2%E4%B9%89/pictures/15-murmurHash_4.png)
+![15-murmurHash_4](pictures/15-murmurHash_4.png)
 
 ​		按照顺时针迁移的规则，数据 Hash 值处于红色段的数据被迁移到了 Node4 中，其它对象还保持这原有的存储位置。通过对节点的添加和删除的分析，一致性哈希算法在保持了单调性的同时，数据的迁移时间达到了最小，这样的算法对分布式集群来说是非常合适的，避免了大量数据迁移，减小了服务器的的压力.
 
@@ -14222,7 +14222,7 @@ Lars的过载判定算法没有对节点调用耗时进行考虑
 
 ​		其实上面的一致性哈希函数还存在一个很大的问题，我们说 Hash 函数是输入的样本量很大的时候，其输出结果在输出域上是均匀分布的，但是这里假如只有三个输入，就很难保证分布是均匀的，有可能产生下图所示的分布，就导致负载极其不均衡
 
-![16-murmurHash_5](/Users/apple/Nustore%20Files/%E6%88%91%E7%9A%84%E5%9D%9A%E6%9E%9C%E4%BA%91/%E8%AF%BE%E7%A8%8B%E7%A0%94%E5%8F%91/Lars/%E8%AE%B2%E4%B9%89/pictures/16-murmurHash_5.png)
+![16-murmurHash_5](pictures/16-murmurHash_5.png)
 
 ​		更加优化的一致性哈希算法引入了虚拟节点机制，即对每一台机器产生多个结点，称为虚拟节点。具体做法可以在机器 ip 或主机名的后面增加编号或端口号来实现。假设一台机器有 1000 个虚拟节点，3 台机器就有 3000 个结点，3000 个结点映射到哈希域上就相对比较均匀了.
 
@@ -14230,7 +14230,7 @@ Lars的过载判定算法没有对节点调用耗时进行考虑
 
 ​		为了解决这种数据倾斜问题，一致性哈希算法引入了虚拟节点机制，即对每一个服务节点计算多个哈希，每个计算结果位置都放置一个此服务节点，称为虚拟节点。具体做法可以在服务器ip或主机名的后面增加编号来实现。例如上面的情况，可以为每台服务器计算三个虚拟节点，于是可以分别计算 “Node A#1”、“Node A#2”、“Node A#3”、“Node B#1”、“Node B#2”、“Node B#3”的哈希值，于是形成六个虚拟节点：
 
-![17-murmurHash_6](/Users/apple/Nustore%20Files/%E6%88%91%E7%9A%84%E5%9D%9A%E6%9E%9C%E4%BA%91/%E8%AF%BE%E7%A8%8B%E7%A0%94%E5%8F%91/Lars/%E8%AE%B2%E4%B9%89/pictures/17-murmurHash_6.png)
+![17-murmurHash_6](pictures/17-murmurHash_6.png)
 
 
 
