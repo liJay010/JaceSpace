@@ -1,5 +1,8 @@
 # Lars
+![FBD6AFF56DEE4C2D642C6C47328AC0B0](pictures\FBD6AFF56DEE4C2D642C6C47328AC0B0.png)
+
 ## 框架部分(Reactor) (重要)
+
 ### C++ TCP/UDP长连接 服务器框架
 #### 构建reactor项目
 ##### 创建Lars/Reactor目录
@@ -582,7 +585,7 @@ enum MessageId {
     uint32_t verr; //虚拟失败次数
     uint32_t rsucc; //真实的成功次数 ---> 用来reporter上报，入库的
     uint32_t rerr;// 真实的失败次数
-
+    
     uint32_t contin_succ;//连续成功次数
     uint32_t contin_err; //连续的失败次数
 
@@ -592,7 +595,7 @@ enum MessageId {
 ##### 属性
 ######     int _modid;
     int _cmdid;
-
+    
     //host_map 当前负载均衡模块所管理的全部主机
     host_map _host_map;
     
