@@ -433,3 +433,116 @@ public:
 
 ```
 
+
+
+## 字典树
+
+### [剑指 Offer II 063. 替换单词](https://leetcode.cn/problems/UhWRSj/)
+
+```CPP
+class Solution {
+class Trie {
+    class dicttree
+    {
+    public:
+        char val;
+        bool isWord;
+        vector<dicttree*> trees;
+        dicttree()
+        {
+            val = 0;
+            isWord = false;
+            trees.resize(26);
+            for (int i = 0; i < 26; ++i) {
+                trees[i] = nullptr;
+            }
+        }
+    };
+    dicttree *root;
+public:
+    Trie() {
+        root = new dicttree();
+    }
+
+    void insert(string word) {
+        dicttree * cur = root;
+        for (int i = 0; i < word.size(); ++i) {
+            if (cur->trees[word[i] - 'a'] == NULL)
+            {
+                cur->trees[word[i] - 'a'] = new dicttree();
+                cur->trees[word[i] - 'a']->val = word[i];
+
+            }
+            cur = cur->trees[word[i] - 'a'];
+        }
+        cur->isWord = true;
+    }
+
+    string search(string word) {
+        dicttree * cur = root;
+        for (int i = 0; i < word.size(); ++i) {
+            if (cur->trees[word[i] - 'a'] == NULL) return word;
+            cur = cur->trees[word[i] - 'a'];
+            if(cur->isWord) return word.substr(0,i + 1);
+        }
+        return word;
+    }
+};
+
+public:
+    string replaceWords(vector<string>& dictionary, string sentence) {
+        Trie* tree = new Trie();
+        for(int i = 0 ; i < dictionary.size();i++)
+        {
+            tree->insert(dictionary[i]);
+        }
+        string res,temp;
+        stringstream ss(sentence);
+        while(getline(ss,temp,' '))
+        {
+            res += tree->search(temp) + " ";
+        }
+        if(res.back() == ' ') res.pop_back();
+
+
+        return res;
+    }
+};
+```
+
+
+
+### [剑指 Offer II 064. 神奇的字典](https://leetcode.cn/problems/US1pGT/)
+
+
+
+```cpp
+class MagicDictionary {
+    vector<string> dictionary;
+public:
+    /** Initialize your data structure here. */
+    MagicDictionary() {
+
+    }
+    
+    void buildDict(vector<string> dictionary) {
+        this->dictionary = dictionary;
+    }
+    
+    bool search(string searchWord) {
+        for(int i = 0;i < dictionary.size() ;i++)
+        {
+            if(searchWord.size() != dictionary[i].size()) continue;
+            int sums = 0;
+            for(int j = 0; j < searchWord.size() ;j++)
+            {
+                if(dictionary[i][j] != searchWord[j]) sums++;
+            }
+            if(sums == 1) return true;
+        }
+        return false;
+    }
+};
+
+```
+
