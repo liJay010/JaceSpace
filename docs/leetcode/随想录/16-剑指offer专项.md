@@ -546,3 +546,166 @@ public:
 
 ```
 
+### [剑指 Offer II 065. 最短的单词编码](https://leetcode.cn/problems/iSwD2y/)
+
+```cpp
+class Solution {
+
+    class Trie {
+    class dicttree
+    {
+    public:
+        char val;
+        bool isWord;
+        vector<dicttree*> trees;
+        dicttree()
+        {
+            val = 0;
+            isWord = false;
+            trees.resize(26);
+            for (int i = 0; i < 26; ++i) {
+                trees[i] = nullptr;
+            }
+        }
+    };
+    dicttree *root;
+public:
+    Trie() {
+        root = new dicttree();
+    }
+
+    void insert(string word) {
+        dicttree * cur = root;
+        for (int i = 0; i < word.size(); ++i) {
+            if (cur->trees[word[i] - 'a'] == NULL)
+            {
+                cur->trees[word[i] - 'a'] = new dicttree();
+                cur->trees[word[i] - 'a']->val = word[i];
+
+            }
+            cur = cur->trees[word[i] - 'a'];
+        }
+        cur->isWord = true;
+    }
+
+    bool search(string word) {
+        dicttree * cur = root;
+        for (int i = 0; i < word.size(); ++i) {
+            if (cur->trees[word[i] - 'a'] == NULL) return false;
+            cur = cur->trees[word[i] - 'a'];
+        }
+        if(cur->isWord == false) return false;
+        return true;
+    }
+
+    bool startsWith(string prefix) {
+        dicttree * cur = root;
+        for (int i = 0; i < prefix.size(); ++i) {
+            if (cur->trees[prefix[i] - 'a'] == nullptr ) return false;
+            cur = cur->trees[prefix[i] - 'a'];
+        }
+        return true;
+    }
+};
+public:
+    int minimumLengthEncoding(vector<string>& words) {
+        Trie *tree = new Trie();
+        for(string &s :words) reverse(s.begin(),s.end());
+        sort(words.begin(),words.end(),[](const string &a,const string &b){
+            return a.size() > b.size();
+        });
+        int count = 0;
+        for(string &s :words) 
+        {
+            if(tree->startsWith(s)) continue;
+            tree->insert(s);
+            count += s.size() + 1;
+        }
+        return count;
+    }
+};
+```
+
+
+
+### [剑指 Offer II 066. 单词之和](https://leetcode.cn/problems/z1R5dt/)
+
+```cpp
+class MapSum {
+    unordered_map<string,int> umap;
+public:
+    /** Initialize your data structure here. */
+    MapSum() {
+
+    }
+    
+    void insert(string key, int val) {
+        umap[key]=val;
+    }
+    
+    int sum(string prefix) {
+        int sum = 0;
+        for(auto x:umap)
+        {
+            if(prefix.size() <= x.first.size() && x.first.substr(0,prefix.size()) == prefix)
+            {
+                sum += x.second;
+            }
+        }
+        return sum;
+    }
+};
+
+```
+
+### [剑指 Offer II 067. 最大的异或](https://leetcode.cn/problems/ms70jA/)（未完成）
+
+
+
+```cpp
+class Tire{
+public:
+    vector<Tire*> next;
+    int val;
+    Tire():next(vector<Tire*>(2)){}
+    void insert(int x){
+        Tire* cur = this;
+        for(int i=0; i<=30; i++){
+            int bit = 1&(x>>(30-i));
+            if(!cur->next[bit]){
+                cur->next[bit] = new Tire();
+            }
+            cur = cur->next[bit];
+        }
+        cur->val = x;
+    }
+    int searchXor(int x){
+        Tire* cur = this;
+        for(int i=0; i<=30; i++){
+            int bit = 1&(x>>(30-i));
+            if(cur->next[1-bit]){
+                cur = cur->next[1-bit];
+            }else{
+                cur = cur->next[bit];
+            }
+        }
+        return cur->val ^ x;
+    }
+};
+
+class Solution {
+public:
+    int findMaximumXOR(vector<int>& nums) {
+        Tire* node = new Tire();
+        int res = 0;
+        for(auto& num:nums){
+            node->insert(num);
+            res = max(res, node->searchXor(num));
+        }
+        return res;
+    }
+};
+```
+
+
+
