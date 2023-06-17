@@ -709,3 +709,50 @@ public:
 
 
 
+## 二分
+
+### [剑指 Offer II 073. 狒狒吃香蕉](https://leetcode.cn/problems/nZZqjQ/)
+
+```cpp
+class Solution {
+public:
+    int minEatingSpeed(vector<int>& piles, int h) {
+        int res = 0;
+        for(int x: piles) res = max(x ,res);
+        int left = 1 , right = res ,pre = 0;
+        int mid = 0;
+        while(left <= right)
+        {
+            pre = mid;
+            mid = (left + right) / 2;
+            int count = 0;
+            for(int x: piles) count += x / mid + ((x % mid) > 0);
+            if(count > h) left = mid + 1;
+            else right = mid - 1;
+        }
+        return left;
+    }
+};
+```
+
+## DP
+
+### [剑指 Offer II 091. 粉刷房子](https://leetcode.cn/problems/JEj789/)
+
+```cpp
+class Solution {
+public:
+    int minCost(vector<vector<int>>& costs) {
+        vector<vector<int>> dp = costs;
+        for(int i = 1 ; i < costs.size() ;i++)
+        {
+            dp[i][0] = min(dp[i - 1][1],dp[i - 1][2]) + costs[i][0];
+            dp[i][1] = min(dp[i - 1][0],dp[i - 1][2]) + costs[i][1];
+            dp[i][2] = min(dp[i - 1][0],dp[i - 1][1]) + costs[i][2];
+        }
+        vector<int> p = dp.back();
+        return min(p[0],min(p[1],p[2]));
+    }
+};
+```
+
