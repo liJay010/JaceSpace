@@ -882,3 +882,37 @@ public:
 
 
 
+## 图
+
+### [695. 岛屿的最大面积](https://leetcode.cn/problems/max-area-of-island/)
+
+```cpp
+class Solution {
+    int count(vector<vector<int>>& grid , int i , int j , int k)
+    {
+        int counts = 0;
+        if(i < 0 || j < 0 || i >= grid.size() || j >= grid[0].size()) return 0;
+        if(grid[i][j] != 1) return 0;
+        counts++;
+        grid[i][j] = k;
+        counts += count(grid , i + 1 , j , k);
+        counts += count(grid , i - 1, j , k);
+        counts += count(grid , i , j + 1, k);
+        counts += count(grid , i , j - 1, k);
+        return counts;
+    }
+public:
+    int maxAreaOfIsland(vector<vector<int>>& grid) {
+        int maxs = 0,k = 2;
+        for(int i = 0; i < grid.size();i++)
+        {
+            for(int j = 0; j < grid[0].size();j++)
+            {
+                if(grid[i][j] == 1) maxs = max(maxs,count(grid ,  i ,  j , k++));
+            }
+        }
+        return maxs;
+    }
+};
+```
+
