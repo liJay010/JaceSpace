@@ -756,3 +756,76 @@ public:
 };
 ```
 
+### [剑指 Offer II 092. 翻转字符](https://leetcode.cn/problems/cyJERH/)
+
+```cpp
+class Solution {
+public:
+    int minFlipsMonoIncr(string s) {
+        //dp[0] 为以0结尾的反转最少次数 ，dp[1] 为1结尾的反转最少次数
+        vector<vector<int>> dp(s.size(),vector<int>(2));
+        dp[0][0] = s[0] == '0' ? 0 : 1;
+        dp[0][1] = s[1] == '1' ? 0 : 1;
+        for(int i = 1; i < s.size() ; i++)
+        {
+            if(s[i] == '0')
+            {
+                dp[i][0] = dp[i - 1][0];
+                dp[i][1] = min(dp[i - 1][1],dp[i - 1][0]) + 1;
+            }
+            else
+            {
+                dp[i][0] = dp[i - 1][0] + 1;
+                dp[i][1] = min(dp[i - 1][1],dp[i - 1][0]);
+            }
+        }
+        return min(dp.back()[0],dp.back()[1]);
+    }
+};
+```
+
+### [剑指 Offer II 093. 最长斐波那契数列](https://leetcode.cn/problems/Q91FMA/)
+
+```cpp
+
+```
+
+
+
+### [剑指 Offer II 096. 字符串交织](https://leetcode.cn/problems/IY6buf/)
+
+```cpp
+
+```
+
+
+
+
+
+### [剑指 Offer II 100. 三角形中最小路径之和](https://leetcode.cn/problems/IlPe0q/)
+
+```cpp
+class Solution {
+public:
+    int minimumTotal(vector<vector<int>>& triangle) {
+        vector<vector<int>> dp = triangle;
+        for(int i = 1 ; i < triangle.size();i++)
+        {
+            for(int j = 0; j < i + 1; j++)
+            {
+                if(j == 0) dp[i][j] = dp[i - 1][j]+ triangle[i][j];
+                else if(j == i) dp[i][j] = dp[i - 1][j - 1]+ triangle[i][j];
+                else dp[i][j] = min(dp[i - 1][j] , dp[i - 1][j - 1]) + triangle[i][j];
+            }
+        }
+
+        int mins = INT_MAX;
+        for(int i = 0; i < triangle.back().size()  ;i++)
+        {
+            mins = min(mins,dp.back()[i]);
+        }
+        return mins;
+    }
+};
+```
+
