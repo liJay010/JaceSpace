@@ -333,6 +333,7 @@ void EventLoop::updateChannel(Channel* channel)
 
 该函数接收一个Channel指针，然后判断该Channel是否是该EventLoop对象中（按照上面的Channel初始化方法，断言判断是正确的，通过），然后调用EventLoop的assertInLoopThread函数，该函数定义如下：
 
+```cpp
 void assertInLoopThread()
 {
 	if (!isInLoopThread())
@@ -340,6 +341,7 @@ void assertInLoopThread()
 	  abortNotInLoopThread();
 	}
 }
+```
 
 该函数又调用了isInLoopThread函数，该函数定义如下：
 
