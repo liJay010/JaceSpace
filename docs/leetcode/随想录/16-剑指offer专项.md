@@ -916,3 +916,176 @@ public:
 };
 ```
 
+### [剑指 Offer II 106. 二分图](https://leetcode.cn/problems/vEAB3K/)（未）
+
+```cpp
+class Solution {
+public:
+    bool isBipartite(vector<vector<int>>& graph) {
+        //dfs 染色法 - 每次染色一种颜色，与其相邻的就染-color颜色。
+        int N = graph.size();
+        vector<int> colors(N,0);
+
+        function<bool(int , int)> dfs = [&](int cur, int color)->bool
+        {
+            if(colors[cur] != 0) return color == colors[cur];
+            colors[cur] = color;
+            for(int i = 0; i < graph[cur].size();i++)
+            {
+                if(!dfs(graph[cur][i],-color)) return false;
+            }
+            return true;
+        };
+		//不一定是连通图，要对所有边进行运用
+        for(int i = 0; i < N ;i++)
+        {
+            if(colors[i] == 0 && !dfs(i,1)) return false;
+        }
+        return true;
+    }
+};
+```
+
+
+
+### [剑指 Offer II 109. 开密码锁](https://leetcode.cn/problems/zlDJc7/)（未）
+
+```cpp
+class Solution {
+public:
+    int openLock(vector<string>& deadends, string target) {
+        // 哈希表vis中存储不可能入队的结点，包括deadends和已访问过的结点
+        unordered_set<string> vis;
+        vis.insert(deadends.begin(), deadends.end()); 
+        if(vis.count("0000")) 
+            return -1;
+        int step = 0;
+        queue<string> st;
+        st.push("0000");
+        while(!st.empty()){            
+            int length = st.size();
+            for(int i = 0; i < length; i++){
+                string curr = st.front();
+                st.pop();
+                // 找到目标元素，直接返回答案
+                if(curr == target)
+                    return step;
+                // 处理curr周围的八个相邻结点
+                for(int j = 0; j < 4; ++j){
+                    // 自增1与自减1
+                    for(int t = -1; t < 2; t += 2){
+                        // 完美的字符处理方式，利用ascⅡ码之差之后加上t并取余作为新得到的整型，然后再加上0的ascⅡ码值返回字符
+                        char a = (curr[j] -'0' + 10 + t) % 10 + '0';
+                        string newOne = curr;
+                        newOne[j] = a;
+                        // 若哈希集中找不到此状态，则加入哈希集同时入队
+                        if(!vis.count(newOne)){
+                            st.push(newOne);
+                            vis.emplace(newOne);
+                        }
+                    }                 
+                }
+            }
+            // 本层队列中元素处理完成，到达下一转动步数，步数加1
+            step++;
+        }
+        return -1;
+    }
+};
+
+```
+
+### [剑指 Offer II 112. 最长递增路径](https://leetcode.cn/problems/fpTFWP/)（未）
+
+```cpp
+class Solution {
+public:
+    int longestIncreasingPath(vector<vector<int>>& matrix) {
+        int m = matrix.size(), n = matrix[0].size();
+        // mark记录已经搜索过的位置，避免重复计算
+        vector<vector<int>> mark(m, vector<int>(n, 0));
+        int res = 0;
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                res = max(res, dfs(matrix, i, j, -1, mark));
+            }
+        }
+        return res;
+
+    }
+
+    int dfs(vector<vector<int>>& matrix, int i, int j, int pre, vector<vector<int>>& mark) {
+        int m = matrix.size(), n = matrix[0].size();
+        // 越界处理
+        if (i < 0 || j < 0 || i >= m || j >= n) {
+            return 0;
+        }
+        // 非递增的情况处理
+        if (matrix[i][j] <= pre) {
+            return 0;
+        }
+        // 记录已经搜索过的位置，避免重复计算
+        if (mark[i][j] != 0) {
+            return mark[i][j];
+        }
+        // 当前位置的最长递增路径的长度
+        mark[i][j] = 1 + max({
+            dfs(matrix, i + 1, j, matrix[i][j], mark), 
+            dfs(matrix, i, j + 1, matrix[i][j], mark),
+            dfs(matrix, i - 1, j, matrix[i][j], mark),
+            dfs(matrix, i, j - 1, matrix[i][j], mark)});
+        return mark[i][j];
+
+    }
+};
+
+
+```
+
+
+
+
+
+
+
+### [剑指 Offer II 117. 相似的字符串](https://leetcode.cn/problems/H6lPxb/)（未）
+
+```cpp
+class Solution {
+public:
+    int numSimilarGroups(vector<string>& strs) {
+        int n = strs.size();
+        vector<int> fa(n); //保存并查集的根节点
+        iota(fa.begin(), fa.end(), 0);
+        //并查集 带路径压缩的find模版写法
+        function<int(int)> find = [&](int x) {
+            return fa[x] == x ? x : fa[x] = find(fa[x]);
+        };
+        //check 检查2个字符串之间是否连接
+        auto check = [&](string &a, string &b) {
+            int cnt = 0;
+            for (int i = 0; i < a.size(); ++i) {
+                if (a[i] != b[i]) ++cnt;
+                if (cnt > 2) return false;
+            }
+            return true;
+        };
+
+        int ans = n; //一开始有n个连通分量
+        for (int i = 0; i < n; ++i) {
+            for (int j = i + 1; j < n; ++j) {
+                if (find(i) == find(j)) {
+                    continue;
+                } 
+                // 如果两个字符串之间可以连接就连接到一起 连通分量减一
+                if (check(strs[i], strs[j])) {
+                    fa[find(i)] = find(j);
+                    --ans;
+                }
+            }
+        }
+        return ans;
+    }
+};
+```
+
