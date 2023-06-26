@@ -212,3 +212,111 @@ public:
 };
 ```
 
+
+
+## 哈希
+
+### [1657. 确定两个字符串是否接近](https://leetcode.cn/problems/determine-if-two-strings-are-close/)
+
+第一个，word1中出现的字符在word2中都出现。
+
+第二个，字符出现的频次数相等。比如，对于word1中字符出现次数从小到大排序为531，那么word2中字符出现的次数从小到大也必须是531。无需出现的次数对应的字符相同。
+
+```cpp
+class Solution {
+public:
+    bool closeStrings(string word1, string word2) {
+        int sz1 = word1.size(), sz2 = word2.size();
+        if (sz1 != sz2) return false;
+        vector<int> rc1(26, 0), rc2(26, 0);
+        for (int i = 0; i < sz1; ++i) {
+            rc1[word1[i] - 'a']++;
+            rc2[word2[i] - 'a']++;
+        }
+        for (int i = 0; i < 26; i++) {
+            if (rc1[i] == 0 && rc2[i] != 0 || rc1[i] != 0 && rc2[i] == 0) return false;
+        }
+        sort(rc1.begin(), rc1.end());
+        sort(rc2.begin(), rc2.end());
+        return rc1 == rc2;
+}
+};
+```
+
+
+
+### [2352. 相等行列对](https://leetcode.cn/problems/equal-row-and-column-pairs/)
+
+```cpp
+class Solution {
+public:
+    int equalPairs(vector<vector<int>>& grid) {
+        vector<vector<int>> grid2 = grid;
+        int res = 0;
+        for(int i = 0; i < grid2.size();i++)
+            for(int j = i + 1; j < grid2[0].size();j++)
+                swap(grid2[i][j],grid2[j][i]);
+        for(int i = 0; i < grid.size();i++)
+            for(int j = 0; j < grid2.size();j++)
+                if(grid[i] == grid2[j]) res++;
+        return res;
+    }
+};
+```
+
+
+
+## 栈&队列
+
+### [2390. 从字符串中移除星号](https://leetcode.cn/problems/removing-stars-from-a-string/)
+
+```cpp
+class Solution {
+public:
+    string removeStars(string s) {
+        string st = "";
+        int t = 0;
+        while(t < s.size())
+        {
+            if(s[t]== '*' && !st.empty()) st.pop_back();
+            else st.push_back(s[t]);
+            t++;
+        }
+        return st;
+    }
+};
+```
+
+
+
+### [649. Dota2 参议院](https://leetcode.cn/problems/dota2-senate/)
+
+```cpp
+class Solution {
+public:
+    string predictPartyVictory(string senate) {
+        queue<int> r, d;
+        for (int i = 0; i < senate.size(); ++i) {
+            if (senate[i] == 'R') {
+                r.push(i);
+            } else {
+                d.push(i);
+            }
+        }
+        while (!r.empty() && !d.empty()) {
+            if (r.front() < d.front()) {
+                d.pop();
+                r.push(r.front() + senate.size());
+                r.pop();
+            } else {
+                r.pop();
+                d.push(d.front() + senate.size());
+                d.pop();
+            }
+        }
+        return r.empty() ? "Dire" : "Radiant";
+    }
+};
+
+```
+
