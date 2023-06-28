@@ -320,3 +320,178 @@ public:
 
 ```
 
+
+
+## 链表
+
+### [2130. 链表最大孪生和](https://leetcode.cn/problems/maximum-twin-sum-of-a-linked-list/)
+
+```cpp
+class Solution {
+public:
+    ListNode* deleteMiddle(ListNode* head) {
+        ListNode* pre_head = new ListNode(0,head);
+        ListNode* slow = pre_head;
+        ListNode* fast = pre_head;
+        while(fast->next && fast->next->next)
+        {
+            slow = slow->next;
+            fast = fast->next->next;
+        }
+        slow->next = slow->next->next;
+        return pre_head->next;
+    }
+};
+```
+
+### [2130. 链表最大孪生和](https://leetcode.cn/problems/maximum-twin-sum-of-a-linked-list/)
+
+```cpp
+class Solution {
+public:
+    int pairSum(ListNode* head) {
+        stack<int> st;
+        ListNode* slow = head;
+        ListNode* fast = head;
+        st.push(head->val);
+        while(fast->next && fast->next->next)
+        {
+            slow = slow->next;
+            fast = fast->next->next;
+            st.push(slow->val);
+        }
+        slow = slow->next;
+        int res = 0;
+        while(slow)
+        {
+
+            res = max(res,slow->val + st.top());
+            st.pop();
+            slow = slow->next;
+        }
+        return res;
+    }
+};
+```
+
+## 二叉树
+
+### 深搜
+
+### [872. 叶子相似的树](https://leetcode.cn/problems/leaf-similar-trees/)
+
+```cpp
+class Solution {
+public:
+    bool leafSimilar(TreeNode* root1, TreeNode* root2) {
+        vector<int> t1,t2;
+        function<void(TreeNode*,vector<int> &)> search = [&](TreeNode* root,vector<int> &t)
+        {
+            if(!root) return ;
+            if(!root->left && !root->right) t.push_back(root->val);
+            search(root->left,t);
+            search(root->right,t);
+        };
+        search(root1,t1);
+        search(root2,t2);
+        return t1 == t2;
+    }
+};
+```
+
+### [1448. 统计二叉树中好节点的数目](https://leetcode.cn/problems/count-good-nodes-in-binary-tree/)
+
+```cpp
+class Solution {
+public:
+    int goodNodes(TreeNode* root) {
+        int count = 0;
+        function<void(TreeNode*,int)> search = [&](TreeNode* root,int maxs)
+        {
+            if(!root) return;
+            maxs= max(maxs,root->val);
+            if(maxs == root->val) count++;
+            search( root->left, maxs);
+            search(root->right, maxs);
+        };
+        search(root,INT_MIN);
+        return count;
+    }
+};
+```
+
+
+
+### [1372. 二叉树中的最长交错路径](https://leetcode.cn/problems/longest-zigzag-path-in-a-binary-tree/)
+
+```cpp
+class Solution {
+public:
+    int longestZigZag(TreeNode* root) {
+        int res = 0;
+        function<void(TreeNode* ,int,int)> search = [&](TreeNode* root,int l,int r)
+        {
+            if(!root) return;
+            res = max({res,l,r});
+            search(root->left,r + 1,0);
+            search(root->right,0,l + 1);
+        };
+        search(root,0,0);
+        return res;
+    }
+};
+```
+
+## 广搜
+
+### [1926. 迷宫中离入口最近的出口](https://leetcode.cn/problems/nearest-exit-from-entrance-in-maze/)
+
+```cpp
+class Solution {
+public:
+    int nearestExit(vector<vector<char>>& maze, vector<int>& entrance) {
+        // 思路：从入口开始按轮BFS，遇到邻居为“.”则入队，并记录轮数
+        // 结束条件时，邻居为边缘格子，返回轮数
+        // 若BFS结束也没有找到出口，返回-1
+
+        const int m = maze.size();
+        const int n = maze[0].size();
+        const int dr[4] = {0, 0, 1, -1};
+        const int dc[4] = {1, -1, 0, 0};
+        queue<pair<int, int>> que;
+
+        // 初始化
+        int erow = entrance[0], ecol = entrance[1];
+        que.emplace(erow, ecol);
+        maze[erow][ecol] = '-';  // 表示已经搜索过
+
+        // 按轮BFS
+        int epoch = 0;
+        while (!que.empty()) {
+            int counter = que.size();
+            epoch++;
+            // 一轮
+            for (int k = 0; k < counter; k++) {
+                auto [r, c] = que.front();
+                que.pop();
+                // 邻居找'.'入队
+                for (int i = 0; i < 4; i++) {
+                    int nr = r + dr[i], nc = c + dc[i];
+                    if (nr >= 0 && nr < m && nc >= 0 && nc < n && maze[nr][nc] == '.') {
+                        // 是边沿直接返回
+                        if (nr == 0 || nr == m - 1 || nc == 0 || nc == n - 1) return epoch;
+                        // 不是边沿，入队
+                        maze[nr][nc] = '-';  // 表示已经搜过
+                        que.emplace(nr, nc); 
+                    }
+                }
+            }
+
+        }
+        return -1;
+
+    }
+};
+
+```
+
