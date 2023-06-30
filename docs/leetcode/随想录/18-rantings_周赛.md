@@ -136,3 +136,145 @@ public:
     }
 };
 ```
+
+
+
+### [2344. 使数组可以被整除的最少删除次数](https://leetcode.cn/problems/minimum-deletions-to-make-array-divisible/)
+
+**1640**---数学，最大公因数
+
+```cpp
+class Solution {
+    int gcd(int a, int b) 
+    {
+        return b == 0 ? a : gcd(b, a% b);
+    }
+public:
+    int minOperations(vector<int>& nums, vector<int>& numsDivide) {
+        int g = numsDivide[0];
+        for (auto &num: numsDivide) g = gcd(g, num);
+        sort(nums.begin(), nums.end());
+        for (int i = 0; i < nums.size(); i ++) {
+            int &num = nums[i];
+            // if(num > g) break;
+            if (g % num == 0) return i;
+        }
+        return -1;
+    }
+};
+```
+
+
+
+### [1367. 二叉树中的链表](https://leetcode.cn/problems/linked-list-in-binary-tree/)
+
+**1649**---二叉树
+
+```cpp
+class Solution {
+    //判断是否一直连续相等
+    bool find_true(ListNode* head, TreeNode* root)
+    {
+        if(head && !root) return false;
+        if(!head) return true;
+        if(head->val != root->val) return false;
+        bool l = find_true(head->next, root->left);
+        bool r = find_true(head->next, root->right);
+        return l || r;
+    }
+public:
+    bool isSubPath(ListNode* head, TreeNode* root) {
+        if(head && !root) return false;
+        if(!head) return true;
+        if(head->val == root->val)
+        {
+            bool l = find_true(head->next, root->left);
+            bool r = find_true(head->next, root->right);
+            if(l || r) return true;
+        }
+        bool l = isSubPath(head, root->left);
+        bool r = isSubPath(head, root->right);
+        return l || r;
+    }
+};
+```
+
+
+
+### [1249. 移除无效的括号](https://leetcode.cn/problems/minimum-remove-to-make-valid-parentheses/)
+
+**1657**---字符串
+
+```cpp
+class Solution {
+public:
+    string minRemoveToMakeValid(string s) {
+        unordered_set<int> res;
+        vector<int> res_left;
+        //正序
+        int left = 0, right = 0;
+        for(int i = 0;i < s.size() ;i++)
+        {
+            if(s[i] == '(') 
+            {
+                left++;
+                res_left.push_back(i);
+            }
+            else if(s[i] == ')') 
+            {
+                if(right < left) right++;
+                else res.insert(i);
+            }
+        }
+        int cur = left - right;
+        for(int i = res_left.size() - cur;i < res_left.size();i++) res.insert(res_left[i]);
+        string result = "";
+        for(int i = 0; i < s.size();i++)
+        {
+            if(res.find(i) == res.end()) result.push_back(s[i]);
+        }
+
+        return result;
+    }
+};
+```
+
+
+
+### [1254. 统计封闭岛屿的数目](https://leetcode.cn/problems/number-of-closed-islands/)
+
+**1658**---图 --深度优先搜索
+
+```cpp
+class Solution {
+public:
+    int closedIsland(vector<vector<int>>& grid) {
+        //dfs
+        int n = grid.size(),m = grid[0].size();
+        function<bool(int, int)> dfs = [&](int i,int j)
+        {
+            if(i == 0 || j == 0 || i == n - 1 || j == m - 1) return grid[i][j] == 0 ? false : true;
+            if(grid[i][j] == 0)
+            {
+                grid[i][j] = 1;
+                int r1 = dfs(i + 1, j);
+                int r2 = dfs(i - 1, j);
+                int r3 = dfs(i , j + 1);
+                int r4 = dfs(i , j - 1);
+                return r1 && r2 && r3 && r4;
+            }
+            return true;
+        };
+        int count = 0;
+        for(int i = 0; i < n ; i++)
+        {
+            for(int j = 0; j < m ;j++)
+            {
+                if(grid[i][j] == 0) dfs(i, j) ? count++ : count;
+            }
+        }
+        return count;
+    }
+};
+```
+
