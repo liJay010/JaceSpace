@@ -99,3 +99,40 @@ public:
 };
 ```
 
+
+
+### [1319. 连通网络的操作次数](https://leetcode.cn/problems/number-of-operations-to-make-network-connected/)
+
+**1633**---并查集
+
+```cpp
+class Solution {
+public:
+    int makeConnected(int n, vector<vector<int>>& connections) {
+        vector<int> father(n);
+        for(int i = 0;i < n;i++) father[i] = i;
+        function<int(int)> find =[&](int a){
+            return a == father[a] ? a : father[a] = find(father[a]);
+        };
+        function<void(int,int)> unions =[&](int a ,int b){
+            int fa = father[a];
+            int fb = father[b];
+            if(fa == fb) return;
+            father[fa] = fb;
+        };
+        int count = 0;
+        for(auto x:connections)
+        {
+            if(find(x[0]) != find(x[1])) unions(x[0],x[1]);
+            else count++;
+        }
+        unordered_set<int> uset;
+        for(int i = 0;i < n ;i++) 
+        {
+            if(uset.find(find(i)) == uset.end()) uset.insert(find(i));
+        }
+
+        return count >= uset.size() - 1 ? uset.size() - 1: -1;
+    }
+};
+```
