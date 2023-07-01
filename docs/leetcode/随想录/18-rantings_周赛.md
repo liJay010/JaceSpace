@@ -2,7 +2,7 @@
 
 https://zerotrac.github.io/leetcode_problem_rating/#/
 
-# 1600-1650
+# 1600-1700
 
 ### [1864. 构成交替字符串需要的最小交换次数](https://leetcode.cn/problems/minimum-number-of-swaps-to-make-the-binary-string-alternating/)
 
@@ -271,6 +271,187 @@ public:
             for(int j = 0; j < m ;j++)
             {
                 if(grid[i][j] == 0) dfs(i, j) ? count++ : count;
+            }
+        }
+        return count;
+    }
+};
+```
+
+### [2593. 标记所有元素后数组的分数](https://leetcode.cn/problems/find-score-of-an-array-after-marking-all-elements/)
+
+**1665**---特殊数据结构
+
+```cpp
+class Solution {
+public:
+    long long findScore(vector<int>& nums) {
+        set<pair<int,int>> nums_map;
+        for(int i = 0; i < nums.size();i++)  nums_map.insert({nums[i],i});
+        long long res = 0;
+        while(nums_map.size())
+        {
+            pair<int,int> t;
+            for(auto x:nums_map)
+            {
+                t = x;
+                break;
+            }
+            res += t.first;
+            nums_map.erase(t);
+            if(t.second > 0) nums_map.erase(pair<int,int>(nums[t.second - 1],t.second - 1));
+            if(t.second < nums.size() - 1) nums_map.erase(pair<int,int>(nums[t.second + 1],t.second + 1));
+        }
+        return res;
+    }
+};
+```
+
+
+
+### [1339. 分裂二叉树的最大乘积](https://leetcode.cn/problems/maximum-product-of-splitted-binary-tree/)
+
+**1674**---二叉数
+
+```cpp
+class Solution {
+    long long MAXS;
+    int all_count;
+    const int MX = 1e9 + 7;
+    int find_max(TreeNode* root)
+    {
+        if(!root) return 0;
+        int left = find_max(root->left);
+        int right = find_max(root->right);
+        long long res_left = ((long long)(all_count - left) * left);
+        long long res_right = ((long long)(all_count - right) * right);
+        MAXS = max({MAXS,res_left,res_right});
+        return root->val + left + right;
+    }
+public:
+    int maxProduct(TreeNode* root) {
+        MAXS = 0;
+        function<int (TreeNode* )> add = [&](TreeNode* root)
+        {
+            if(!root) return 0;
+            return (add(root->left)+add(root->right) + root->val) % MX;
+        };
+        all_count = add(root);
+        find_max(root);
+        return MAXS % MX;
+    }
+};
+```
+
+### [2280. 表示一个折线图的最少线段数](https://leetcode.cn/problems/minimum-lines-to-represent-a-line-chart/)
+
+**1680**---数学类
+
+```cpp
+class Solution {
+public:
+    int minimumLines(vector<vector<int>>& stockPrices) {
+        if(stockPrices.size() < 3) return stockPrices.size() - 1;
+        sort(stockPrices.begin(),stockPrices.end(),[&](const vector<int> &a,const vector<int> &b)
+        {return a[0] < b[0];});
+        int count = 1;
+        for(int i = 2;i < stockPrices.size();i++)
+        {
+            if((long)(stockPrices[i][0] - stockPrices[i - 1][0]) * (stockPrices[i - 1][1] - stockPrices[i - 2][1])   != (long)(stockPrices[i][1] - stockPrices[i - 1][1]) * (stockPrices[i - 1][0] - stockPrices[i - 2][0])) 
+            {
+                count++;
+            }
+        }
+        return count;
+    }
+};
+```
+
+
+
+### [2074. 反转偶数长度组的节点](https://leetcode.cn/problems/reverse-nodes-in-even-length-groups/)
+
+ **1685**---链表
+
+```cpp
+class Solution {
+public:
+    ListNode* reverseEvenLengthGroups(ListNode* head) {
+        vector<ListNode*> res;
+        ListNode* cur = head;
+        int sum = 1;
+        while(cur)
+        {
+            int n = sum;
+            int cnt = 0;
+            while(cur && n--)
+            {
+                res.push_back(cur);
+                cur = cur->next;
+                cnt++;
+            }
+            if(cnt % 2 == 0)reverse(res.end() - cnt ,res.end());
+            sum++;
+        }
+        for(int i = 0;i < res.size() - 1 ;i++) res[i]->next = res[i + 1];
+        res.back()->next = nullptr;
+        return res[0];
+    }
+};
+```
+
+### [1419. 数青蛙](https://leetcode.cn/problems/minimum-number-of-frogs-croaking/)
+
+**1689**---字符串，记数
+
+计算青蛙的个数，像俄罗斯方块一样，“croak”满了需要消去，最后计算"c"的最大值就是青蛙数量
+
+```cpp
+class Solution {
+public:
+    int minNumberOfFrogs(string croakOfFrogs) {
+        int counts[5] = {0};
+        int res = 0;
+        //遍历函数，记数 ，若前面字符大于后面字符数量则返回-1，若满足了则清除，计算最大的counts[0]第一声
+        for(int k = 0; k < croakOfFrogs.size(); k++)
+            {
+                if(croakOfFrogs[k] == 'c') counts[0]++;
+                if(croakOfFrogs[k] == 'r') counts[1]++;
+                if(croakOfFrogs[k] == 'o') counts[2]++;
+                if(croakOfFrogs[k] == 'a') counts[3]++;
+                if(croakOfFrogs[k] == 'k') counts[4]++;
+                for(int i = 1; i < 5; i++)
+                    if(counts[i] > counts[i - 1] ) return -1;
+                res = max(res,counts[0] - counts[4]);
+            }
+        //最后叫声数量不同则 -1
+        for(int i = 1; i < 5; i++)
+            if(counts[i] != counts[i - 1] ) return -1;
+        return res;
+    }
+};
+
+```
+
+
+
+### [829. 连续整数求和](https://leetcode.cn/problems/consecutive-numbers-sum/)
+
+**1694**---数学问题
+
+```cpp
+class Solution {
+public:
+    int consecutiveNumbersSum(int n) {
+        // 求的是能被 n 整除的所有奇数
+        int count = 0;
+        for(int i = 1; i <= sqrt(n) ; i += 1)
+        {
+            if(n % i == 0)
+            {
+                if(i % 2 == 1) count++; // i 能被整除
+                if((n / i % 2) == 1) count++; // n / i 为奇数
+                if(i * i == n && i % 2 == 1) count--; //多加了
             }
         }
         return count;
