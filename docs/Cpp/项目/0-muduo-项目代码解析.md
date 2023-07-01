@@ -29,7 +29,7 @@ protected:
 
 ## 2.Logger日志类
 
-日志类的主要作用是实现日志输出
+日志类的主要作用是实现日志输出,日志类是一个单例类，instance()方法就是获取日志的唯一实例对象。
 
 使用宏定义方便使用（无需构造类）
 
@@ -182,6 +182,8 @@ void Logger::log(std::string msg)
 ## 3.Timestamp时间戳类
 
 主要功能为提供时间的输出
+
+explicit 是防止隐式类型转化，避免赋值的是时候进行隐式类型转化。
 
 Timestamp.h
 
@@ -339,6 +341,11 @@ Channel类是为了对读写事件和对应fd的封装
 
 Channel.h
 
+**using定义别名 == typedef 重定义一个类型**
+
+**tie 函数：**
+用弱智能指针判断是否channel被remove掉。防止调用HandlerEvent的时候Channel已经释放了，这个tie函数会在TcpConnection建立成功的回调函数里面被调用。
+
 ```cpp
 #pragma once
 
@@ -412,7 +419,7 @@ private:
     int events_; // 注册fd感兴趣的事件
     int revents_; // poller返回的具体发生的事件
     int index_;
-
+	//用弱智能指针判断是否channel被remove掉
     std::weak_ptr<void> tie_;
     bool tied_;
 
@@ -427,6 +434,18 @@ private:
 ```
 
 Channel.cc
+
+tied_ 是在 tie 方法设置之后 **才是true**，tie方法又是上层TcpConnection调用连接建立成功的方法connectEstablished来进行建立成功的。说明当连接建立好的时候，这个时候如果TcpConnection还存在，表明连接状态是良好的，此时我们调用EPollPoller中handlerEvent的时候能保证执行正确。
+**如果TcpConnection因为某种缘故断开了，这个时候处理这个handlerEvent事件已经没有意义，因为也发送不回去了，此时上层的shared_ptr已经跟着TcpConnection一起消失，大佬的编码是就不处理了。**
+**这里大佬的编码中采用不处理的方式。因为Channel已经跟着TcpConnection一同释放了。所以这里没有else分支。**
+handlerEventWithGuard 则是对回调对应的具体的事件。
+
+```cpp
+//通过提升为强智能指针看资源是否被释放
+std::shared_ptr<void> guard = tie_.lock();
+```
+
+
 
 ```cpp
 #include "Channel.h"
@@ -450,6 +469,7 @@ Channel::~Channel()
 }
 
 // channel的tie方法什么时候调用过？一个TcpConnection新连接创建的时候 TcpConnection => Channel 
+//防止调用HandlerEvent的时候Channel已经释放了，这个tie函数会在TcpConnection建立成功的回调函数里面被调用。
 void Channel::tie(const std::shared_ptr<void> &obj)
 {
     tie_ = obj;
