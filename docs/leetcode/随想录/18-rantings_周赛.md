@@ -606,11 +606,70 @@ public:
 
 
 
+### [1014. 最佳观光组合](https://leetcode.cn/problems/best-sightseeing-pair/)
+
+**1730**---动态规划
+
+```cpp
+class Solution {
+public:
+    int maxScoreSightseeingPair(vector<int>& values) {
+        int res = 0;
+        vector<int> dp(values.size(),0);
+        for(int i = 1; i < values.size();i++)
+        {
+            dp[i] = max(values[i] + values[i - 1] - 1, dp[i - 1] - values[i - 1] + values[i] - 1);
+            res = max(res,dp[i]);
+        }
+        return res;
+    }
+};
+```
+
+### [1079. 活字印刷***](https://leetcode.cn/problems/letter-tile-possibilities/)
+
+**1740---回溯--深搜（值得刷）**
+
+对一个数组进行回溯深搜
+
+```cpp
+class Solution {
+public:
+    int numTilePossibilities(string tiles) {
+        int nums[26] = {0};
+        for(char x:tiles) nums[x - 'A']++;
+        int res = 0;
+        function<void()> dfs = [&]()
+        {
+            for(int j=0;j < 26;j++)
+            {
+                if(nums[j])
+                {
+                    nums[j]--;
+                    res++;
+                    dfs();
+                    nums[j]++;
+                }
+            }
+        };
+        dfs();
+        return res;
+    }
+    
+};
+```
+
+
+
+
+
 # 周赛
 
 ## 352场
 
 ### 6909.最长奇偶子数组
+
+---双指针
 
 ```cpp
 class Solution {
@@ -634,6 +693,8 @@ public:
 ```
 
 ### 6916.和等于目标值的质数对
+
+----数学，质数问题
 
 ```cpp
 class Solution {
