@@ -651,18 +651,215 @@ Poller* Poller::newDefaultPoller(EventLoop *loop)
 
 ## 7.EpollPoller
 
-
+Poller的实现，用于Channel事件的注册修改删除以及监听。使用的原型函数epoll
 
 ```cpp
+virtual Timestamp poll(int timeoutMs, ChannelList *activeChannels) = 0; //epoll_wait()
+virtual void updateChannel(Channel *channel) = 0; //epoll_ctl() 添加事件/更改事件
+virtual void removeChannel(Channel *channel) = 0; //epoll_ctl() 删除 并从事件 并从Channel_map中移除
+```
 
+EPollPoller.h
+
+```cpp
+#pragma once
+
+#include "Poller.h"
+#include "Timestamp.h"
+
+#include <vector>
+#include <sys/epoll.h>
+
+class Channel;
+
+/**
+ * epoll的使用  
+ * epoll_create
+ * epoll_ctl   add/mod/del
+ * epoll_wait
+ */ 
+class EPollPoller : public Poller
+{
+public:
+    EPollPoller(EventLoop *loop);
+    ~EPollPoller() override;
+
+    // 重写基类Poller的抽象方法
+    Timestamp poll(int timeoutMs, ChannelList *activeChannels) override;
+    void updateChannel(Channel *channel) override;
+    void removeChannel(Channel *channel) override;
+private:
+    static const int kInitEventListSize = 16;
+
+    // 填写活跃的连接
+    void fillActiveChannels(int numEvents, ChannelList *activeChannels) const;
+    // 更新channel通道
+    void update(int operation, Channel *channel);
+
+    using EventList = std::vector<epoll_event>;
+
+    int epollfd_;
+    EventList events_;
+};
 ```
 
 
 
-
+EPollPoller.cc
 
 ```cpp
+#include "EPollPoller.h"
+#include "Logger.h"
+#include "Channel.h"
 
+#include <errno.h>
+#include <unistd.h>
+#include <strings.h>
+
+// channel未添加到poller中
+const int kNew = -1;  // channel的成员index_ = -1
+// channel已添加到poller中
+const int kAdded = 1;
+// channel从poller中删除
+const int kDeleted = 2;
+
+EPollPoller::EPollPoller(EventLoop *loop)
+    : Poller(loop)
+    , epollfd_(::epoll_create1(EPOLL_CLOEXEC))
+    , events_(kInitEventListSize)  // vector<epoll_event>
+{
+    if (epollfd_ < 0)
+    {
+        LOG_FATAL("epoll_create error:%d \n", errno);
+    }
+}
+
+EPollPoller::~EPollPoller() 
+{
+    ::close(epollfd_);
+}
+
+Timestamp EPollPoller::poll(int timeoutMs, ChannelList *activeChannels)
+{
+    // 实际上应该用LOG_DEBUG输出日志更为合理
+    LOG_INFO("func=%s => fd total count:%lu \n", __FUNCTION__, channels_.size());
+
+    int numEvents = ::epoll_wait(epollfd_, &*events_.begin(), static_cast<int>(events_.size()), timeoutMs);
+    int saveErrno = errno;
+    Timestamp now(Timestamp::now());
+
+    if (numEvents > 0)
+    {
+        LOG_INFO("%d events happened \n", numEvents);
+        fillActiveChannels(numEvents, activeChannels);
+        if (numEvents == events_.size())
+        {
+            events_.resize(events_.size() * 2);
+        }
+    }
+    else if (numEvents == 0)
+    {
+        LOG_DEBUG("%s timeout! \n", __FUNCTION__);
+    }
+    else
+    {
+        if (saveErrno != EINTR)
+        {
+            errno = saveErrno;
+            LOG_ERROR("EPollPoller::poll() err!");
+        }
+    }
+    return now;
+}
+
+// channel update remove => EventLoop updateChannel removeChannel => Poller updateChannel removeChannel
+/**
+ *            EventLoop  =>   poller.poll
+ *     ChannelList      Poller
+ *                     ChannelMap  <fd, channel*>   epollfd
+ */ 
+void EPollPoller::updateChannel(Channel *channel)
+{
+    const int index = channel->index();
+    LOG_INFO("func=%s => fd=%d events=%d index=%d \n", __FUNCTION__, channel->fd(), channel->events(), index);
+
+    if (index == kNew || index == kDeleted)
+    {
+        if (index == kNew)
+        {
+            int fd = channel->fd();
+            channels_[fd] = channel;
+        }
+
+        channel->set_index(kAdded);
+        update(EPOLL_CTL_ADD, channel);
+    }
+    else  // channel已经在poller上注册过了
+    {
+        int fd = channel->fd();
+        if (channel->isNoneEvent())
+        {
+            update(EPOLL_CTL_DEL, channel);
+            channel->set_index(kDeleted);
+        }
+        else
+        {
+            update(EPOLL_CTL_MOD, channel);
+        }
+    }
+}
+
+// 从poller中删除channel
+void EPollPoller::removeChannel(Channel *channel) 
+{
+    int fd = channel->fd();
+    channels_.erase(fd);
+
+    LOG_INFO("func=%s => fd=%d\n", __FUNCTION__, fd);
+    
+    int index = channel->index();
+    if (index == kAdded)
+    {
+        update(EPOLL_CTL_DEL, channel);
+    }
+    channel->set_index(kNew);
+}
+
+// 填写活跃的连接
+void EPollPoller::fillActiveChannels(int numEvents, ChannelList *activeChannels) const
+{
+    for (int i=0; i < numEvents; ++i)
+    {
+        Channel *channel = static_cast<Channel*>(events_[i].data.ptr);
+        channel->set_revents(events_[i].events);
+        activeChannels->push_back(channel); // EventLoop就拿到了它的poller给它返回的所有发生事件的channel列表了
+    }
+}
+
+// 更新channel通道 epoll_ctl add/mod/del
+void EPollPoller::update(int operation, Channel *channel)
+{
+    epoll_event event;
+    bzero(&event, sizeof event);
+    
+    int fd = channel->fd();
+
+    event.events = channel->events();
+    event.data.fd = fd; 
+    event.data.ptr = channel;
+    
+    if (::epoll_ctl(epollfd_, operation, fd, &event) < 0)
+    {
+        if (operation == EPOLL_CTL_DEL)
+        {
+            LOG_ERROR("epoll_ctl del error:%d\n", errno);
+        }
+        else
+        {
+            LOG_FATAL("epoll_ctl add/mod error:%d\n", errno);
+        }
+    }
+}
 ```
 
 
@@ -671,17 +868,51 @@ Poller* Poller::newDefaultPoller(EventLoop *loop)
 
 ## 8.CurrentThread
 
+此类用于获取当前线程的id：Tid
 
-
-
+CurrentThread.h
 
 ```cpp
+#pragma once
 
+#include <unistd.h>
+#include <sys/syscall.h>
+
+namespace CurrentThread
+{
+    //__thread 线程全局变量，每个线程都独有一份
+    extern __thread int t_cachedTid;
+
+    void cacheTid();
+	
+    inline int tid()
+    {
+        if (__builtin_expect(t_cachedTid == 0, 0))
+        {
+            cacheTid();
+        }
+        return t_cachedTid;
+    }
+}
 ```
 
-
+CurrentThread.cc
 
 ```cpp
+#include "CurrentThread.h"
 
+namespace CurrentThread
+{
+    __thread int t_cachedTid = 0;   
+
+    void cacheTid()
+    {
+        if (t_cachedTid == 0)
+        {
+            // 通过linux系统调用，获取当前线程的tid值
+            t_cachedTid = static_cast<pid_t>(::syscall(SYS_gettid));
+        }
+    }
+}
 ```
 
