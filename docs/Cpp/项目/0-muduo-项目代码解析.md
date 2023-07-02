@@ -548,3 +548,140 @@ void Channel::handleEventWithGuard(Timestamp receiveTime)
 }
 ```
 
+
+
+## 6.Poller抽象
+
+// Poller是多路事件分发器的核心IO复用模块
+
+Poller.h
+
+```cpp
+#pragma once
+
+#include "noncopyable.h"
+#include "Timestamp.h"
+
+#include <vector>
+#include <unordered_map>
+
+class Channel;
+class EventLoop;
+
+// muduo库中多路事件分发器的核心IO复用模块
+class Poller : noncopyable
+{
+public:
+    using ChannelList = std::vector<Channel*>;
+
+    Poller(EventLoop *loop);
+    virtual ~Poller() = default;
+
+    // 给所有IO复用保留统一的接口
+    virtual Timestamp poll(int timeoutMs, ChannelList *activeChannels) = 0;
+    virtual void updateChannel(Channel *channel) = 0;
+    virtual void removeChannel(Channel *channel) = 0;
+    
+    // 判断参数channel是否在当前Poller当中
+    bool hasChannel(Channel *channel) const;
+
+    // EventLoop可以通过该接口获取默认的IO复用的具体实现
+    static Poller* newDefaultPoller(EventLoop *loop);
+protected:
+    // map的key：sockfd  value：sockfd所属的channel通道类型
+    using ChannelMap = std::unordered_map<int, Channel*>;
+    ChannelMap channels_;
+private:
+    EventLoop *ownerLoop_; // 定义Poller所属的事件循环EventLoop
+};
+```
+
+
+
+Poller.cc
+
+```cpp
+
+#include "Poller.h"
+#include "Channel.h"
+
+Poller::Poller(EventLoop *loop)
+    : ownerLoop_(loop)
+{
+}
+
+bool Poller::hasChannel(Channel *channel) const
+{
+    auto it = channels_.find(channel->fd());
+    return it != channels_.end() && it->second == channel;
+}
+```
+
+
+
+为了不让基类文件中调用派生类实例对象，将此函数单独写一个文件。
+
+```cpp
+//getenv是获取当前的环境变量
+::getenv("MUDUO_USE_POLL")
+```
+
+DefaultPoller.cc
+
+```cpp
+#include "Poller.h"
+#include "EPollPoller.h"
+
+#include <stdlib.h>
+
+Poller* Poller::newDefaultPoller(EventLoop *loop)
+{
+    if (::getenv("MUDUO_USE_POLL"))
+    {
+        return nullptr; // 生成poll的实例
+    }
+    else
+    {
+        return new EPollPoller(loop); // 生成epoll的实例
+    }
+}
+```
+
+
+
+## 7.EpollPoller
+
+
+
+```cpp
+
+```
+
+
+
+
+
+```cpp
+
+```
+
+
+
+
+
+## 8.CurrentThread
+
+
+
+
+
+```cpp
+
+```
+
+
+
+```cpp
+
+```
+

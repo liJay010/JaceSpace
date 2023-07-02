@@ -459,3 +459,211 @@ public:
 };
 ```
 
+
+
+### [1054. 距离相等的条形码](https://leetcode.cn/problems/distant-barcodes/)
+
+**1701**---优先级队列
+
+```cpp
+class Solution {
+    class cmp
+    {
+    public:
+        bool operator()(const pair<int,int> &a ,const pair<int,int> &b)
+        {
+            return a.second < b.second;
+        }
+    };
+public:
+    vector<int> rearrangeBarcodes(vector<int>& barcodes) {
+        priority_queue<pair<int,int>,vector<pair<int,int>>,cmp> que;
+        unordered_map<int,int> umap;
+        for(int x: barcodes) umap[x]++;
+        for(auto x:umap) que.push(x);
+        //优先选择最多的元素
+        vector<int> res(barcodes.size());
+        int pre = INT_MAX;
+        for(int i = 0; i < barcodes.size();i++)
+        {
+            auto x = que.top();
+            que.pop();
+            if(x.first == pre)
+            {
+                auto x2 = que.top();
+                que.pop();
+                que.push(x);
+                x = x2;
+            }
+            res[i] = x.first;
+            if(x.second > 1) que.push({x.first,x.second - 1});
+            pre = res[i];
+        }
+        return res;
+    }
+};
+```
+
+### [923. 三数之和的多种可能](https://leetcode.cn/problems/3sum-with-multiplicity/)
+
+**1710**---双指针，阶乘
+
+```cpp
+class Solution {
+public:
+    int threeSumMulti(vector<int>& arr, int target) {
+        sort(arr.begin(),arr.end());
+        function<long long(int,int)> C = [&](int n,int r)
+        {
+            long long zi = 1;
+            r = min(r,n-r);
+            int lr = r;
+            while(lr--) zi *= (n--);
+            while(r) zi /= (r--);
+            return zi;
+        };
+        int MAX = 1e9 + 7;
+        map<int,int> arr_map;
+        for(int x:arr)arr_map[x]++;
+        vector<pair<int,int>> vec;
+        for(auto x:arr_map) vec.push_back(x);
+        int res = 0;
+        //出现 A B C 不相同
+        for(int i = 0; i < vec.size();i++)
+        {
+            int left = i,right = vec.size() - 1;
+            while(left <= right)
+            {
+                if(vec[i].first + vec[left].first + vec[right].first == target) 
+                    {
+                        //三数不同
+                        if((i != left) && (i != right) && (left != right))
+                        	res = (res + ((long long)vec[i].second * vec[left].second * vec[right].second)) % MAX;
+                        //三数相同 排列组合 C(vec[i].second,3)
+                        else if((i == left) && (i == right) &&(left == right))
+                        {
+                            if(vec[i].second >= 3)res = (C(vec[i].second,3) + res) % MAX;
+                        }
+                        else{
+                                //两数相同
+                                if(left == i && vec[i].second >= 2)
+                                {
+                                    res = (C(vec[i].second,2) * vec[right].second + res) % MAX; 
+                                }
+                                else if(right == i && vec[i].second >= 2)
+                                {
+                                    res = (C(vec[i].second,2) * vec[left].second + res) % MAX;
+                                }
+                                else if(right == left && vec[left].second >= 2)
+                                {
+                                    res = (C(vec[right].second,2) * vec[i].second + res) % MAX;
+                                }
+                        }
+                        right--;
+                        left++;
+                    }
+                else if(vec[i].first + vec[left].first + vec[right].first > target) right--;
+                else left++;
+            }
+        }
+
+        return res;
+    }
+};
+```
+
+
+
+### [2563. 统计公平数对的数目](https://leetcode.cn/problems/count-the-number-of-fair-pairs/)
+
+**1720---排序+二分查找**
+
+二分查找函数：
+
+lower_bound()返回值是一个迭代器,返回指向**大于等于**key的第一个值的位置
+
+upper_bound()返回值是一个迭代器,返回指向**大于**key的第一个值的位置
+
+找到返回该数字的地址，不存在则返回end。通过返回的地址减去起始地址begin,得到找到数字在数组中的下标。
+
+```cpp
+class Solution {
+public:
+    long long countFairPairs(vector<int>& nums, int lower, int upper) {
+        sort(nums.begin(), nums.end());
+        long long res = 0LL;
+        for (auto it = nums.begin(); it != nums.end(); ++it) {
+            int minNum = lower - *it;
+            int maxNum = upper - *it;
+            auto x = lower_bound(it + 1, nums.end(), minNum);
+            auto y = upper_bound(x, nums.end(), maxNum);
+            res += y - x;
+        }
+        return res;
+    }
+};
+```
+
+
+
+# 周赛
+
+## 352场
+
+### 6909.最长奇偶子数组
+
+```cpp
+class Solution {
+public:
+    int longestAlternatingSubarray(vector<int>& nums, int threshold) {
+        int res = 0, left = 0, right = 0;
+        while(left < nums.size() && right < nums.size())
+        {
+            if(nums[left] % 2 == 0 && nums[left] <= threshold)
+            {
+                right = left + 1;
+                while(right < nums.size() && nums[right] <= threshold && ((nums[right] % 2)^(nums[right - 1] % 2))) right++;
+                res = max(res,right - left); 
+                left = right - 1;
+            }
+            left++;
+        }
+        return res;
+    }
+};
+```
+
+### 6916.和等于目标值的质数对
+
+```cpp
+class Solution {
+public:
+    vector<vector<int>> findPrimePairs(int n) {
+        //求出所有质数
+        vector<bool> zhishu(n + 1,true);
+        vector<int> zhi;
+        zhishu[0] = false;
+        zhishu[1] = false;
+        for(int i = 2; i <= n ;i++)
+        {
+            if(zhishu[i])
+            {
+                for(int k = 2; i * k <= n;k++) zhishu[i * k] = false;
+            }
+        }
+        for(int i = 2; i < n; i++) if(zhishu[i]) zhi.push_back(i);
+        unordered_set<int> uset_zhi(zhi.begin(),zhi.end());
+        vector<vector<int>> res;
+        int mx = 0;
+        for(int i = 0; i < zhi.size() && zhi[i] <= n / 2; i++)
+        {
+            if(uset_zhi.find(n-zhi[i]) != uset_zhi.end()) res.push_back({zhi[i],n - zhi[i]});
+        }
+        
+        return res;
+    }
+};
+```
+
+
+
