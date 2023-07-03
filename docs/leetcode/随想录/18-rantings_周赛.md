@@ -661,6 +661,27 @@ public:
 
 
 
+### [1297. 子串的最大出现次数**](https://leetcode.cn/problems/maximum-number-of-occurrences-of-a-substring/)
+
+**1748**---哈希表
+
+```cpp
+class Solution {
+public:
+    int maxFreq(string s, int maxLetters, int minSize, int maxSize) {
+        unordered_map<string,int> umap;
+        int res = 0;
+        for( int i = 0 ; i + minSize <= s.size(); i++)
+        {
+            string sub = s.substr(i,minSize);
+            unordered_set<char> uset(sub.begin(),sub.end());
+            if(uset.size() <= maxLetters) res = max(res , ++umap[sub]);
+        }
+        return res;
+    }
+};
+```
+
 
 
 # 周赛
