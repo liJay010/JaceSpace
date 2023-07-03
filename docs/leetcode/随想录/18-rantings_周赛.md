@@ -682,6 +682,53 @@ public:
 };
 ```
 
+### [1027. 最长等差数列***](https://leetcode.cn/problems/longest-arithmetic-subsequence/)
+
+**1758---动态规划**
+
+```cpp
+//dp[i][j]为以i结束的差为 j 的数量
+class Solution {
+public:
+    int longestArithSeqLength(vector<int>& nums) {
+        int dp[nums.size()][1001];
+        memset(dp,0,sizeof(dp));
+        int res = 0;
+        for(int i = 1; i < nums.size() ;i++)
+        {
+            for(int j = 0; j < i ;j++)
+            {
+                int count = nums[j] - nums[i] + 500;
+                dp[i][count] = dp[j][count] + 1;
+                res = max(res,dp[i][count]);
+            }
+        }
+        return res + 1;
+    }
+};
+
+```
+
+### [2498. 青蛙过河 II](https://leetcode.cn/problems/frog-jump-ii/)
+
+**1759---数组**
+
+```cpp
+class Solution {
+public:
+    int maxJump(vector<int>& stones) {
+        int res = 0;
+        vector<int> step;
+        for(int i = 0; i < stones.size();i += 2) step.push_back(stones[i]);
+        int cur = stones.size() % 2 == 1 ? stones.size() - 2 : stones.size() - 1;
+        for(int i = cur; i >= 0;i -= 2) step.push_back(stones[i]);
+        step.push_back(stones[0]);
+        for(int i = 1; i < step.size();i++) res = max(res,abs(step[i] - step[i-1]));
+        return res;
+    }
+};
+```
+
 
 
 # 周赛
