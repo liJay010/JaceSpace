@@ -663,7 +663,7 @@ public:
 
 ### [1297. 子串的最大出现次数**](https://leetcode.cn/problems/maximum-number-of-occurrences-of-a-substring/)
 
-**1748**---哈希表
+**1748**---哈希表,只需要考虑短串即可，因为长串包含短串，所以maxSize参数无用
 
 ```cpp
 class Solution {
