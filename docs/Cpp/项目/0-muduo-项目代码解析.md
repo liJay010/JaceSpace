@@ -1538,3 +1538,677 @@ std::vector<EventLoop*> EventLoopThreadPool::getAllLoops()
 }
 ```
 
+
+
+
+
+## 13.Socket类
+
+Socket.h
+
+```cpp
+#pragma once
+
+#include "noncopyable.h"
+
+class InetAddress;
+
+// 封装socket fd
+class Socket : noncopyable
+{
+public:
+    explicit Socket(int sockfd)
+        : sockfd_(sockfd)
+    {}
+
+    ~Socket();
+
+    int fd() const { return sockfd_; }
+    void bindAddress(const InetAddress &localaddr);
+    void listen();
+    int accept(InetAddress *peeraddr);
+
+    void shutdownWrite();
+
+    void setTcpNoDelay(bool on);
+    void setReuseAddr(bool on);
+    void setReusePort(bool on);
+    void setKeepAlive(bool on);
+private:
+    const int sockfd_;
+};
+```
+
+
+
+Socket.cc
+
+```cpp
+#include "Socket.h"
+#include "Logger.h"
+#include "InetAddress.h"
+
+#include <unistd.h>
+#include <sys/types.h>         
+#include <sys/socket.h>
+#include <strings.h>
+#include <netinet/tcp.h>
+#include <sys/socket.h>
+
+Socket::~Socket()
+{
+    close(sockfd_);
+}
+
+void Socket::bindAddress(const InetAddress &localaddr)
+{
+    if (0 != ::bind(sockfd_, (sockaddr*)localaddr.getSockAddr(), sizeof(sockaddr_in)))
+    {
+        LOG_FATAL("bind sockfd:%d fail \n", sockfd_);
+    }
+}
+
+void Socket::listen()
+{
+    if (0 != ::listen(sockfd_, 1024))
+    {
+        LOG_FATAL("listen sockfd:%d fail \n", sockfd_);
+    }
+}
+
+int Socket::accept(InetAddress *peeraddr)
+{
+    /**
+     * 1. accept函数的参数不合法
+     * 2. 对返回的connfd没有设置非阻塞
+     * Reactor模型 one loop per thread
+     * poller + non-blocking IO
+     */ 
+    sockaddr_in addr;
+    socklen_t len = sizeof addr;
+    bzero(&addr, sizeof addr);
+    int connfd = ::accept4(sockfd_, (sockaddr*)&addr, &len, SOCK_NONBLOCK | SOCK_CLOEXEC);
+    if (connfd >= 0)
+    {
+        peeraddr->setSockAddr(addr);
+    }
+    return connfd;
+}
+
+void Socket::shutdownWrite()
+{
+    if (::shutdown(sockfd_, SHUT_WR) < 0)
+    {
+        LOG_ERROR("shutdownWrite error");
+    }
+}
+
+void Socket::setTcpNoDelay(bool on)
+{
+    int optval = on ? 1 : 0;
+    ::setsockopt(sockfd_, IPPROTO_TCP, TCP_NODELAY, &optval, sizeof optval);
+}
+
+void Socket::setReuseAddr(bool on)
+{
+    int optval = on ? 1 : 0;
+    ::setsockopt(sockfd_, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof optval);
+}
+
+void Socket::setReusePort(bool on)
+{
+    int optval = on ? 1 : 0;
+    ::setsockopt(sockfd_, SOL_SOCKET, SO_REUSEPORT, &optval, sizeof optval);
+}
+
+void Socket::setKeepAlive(bool on)
+{
+    int optval = on ? 1 : 0;
+    ::setsockopt(sockfd_, SOL_SOCKET, SO_KEEPALIVE, &optval, sizeof optval);
+}
+```
+
+
+
+## 14.Acceptor类
+
+
+
+Acceptor.h
+
+```cpp
+#pragma once
+#include "noncopyable.h"
+#include "Socket.h"
+#include "Channel.h"
+
+#include <functional>
+
+class EventLoop;
+class InetAddress;
+
+class Acceptor : noncopyable
+{
+public:
+    using NewConnectionCallback = std::function<void(int sockfd, const InetAddress&)>;
+    Acceptor(EventLoop *loop, const InetAddress &listenAddr, bool reuseport);
+    ~Acceptor();
+
+    void setNewConnectionCallback(const NewConnectionCallback &cb) 
+    {
+        newConnectionCallback_ = cb;
+    }
+
+    bool listenning() const { return listenning_; }
+    void listen();
+private:
+    void handleRead();
+    
+    EventLoop *loop_; // Acceptor用的就是用户定义的那个baseLoop，也称作mainLoop
+    Socket acceptSocket_;
+    Channel acceptChannel_;
+    NewConnectionCallback newConnectionCallback_;
+    bool listenning_;
+};
+```
+
+
+
+Acceptor.cc
+
+```cpp
+#include "Acceptor.h"
+#include "Logger.h"
+#include "InetAddress.h"
+
+#include <sys/types.h>    
+#include <sys/socket.h>
+#include <errno.h>
+#include <unistd.h>
+
+
+static int createNonblocking()
+{
+    int sockfd = ::socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC, 0);
+    if (sockfd < 0) 
+    {
+        LOG_FATAL("%s:%s:%d listen socket create err:%d \n", __FILE__, __FUNCTION__, __LINE__, errno);
+    }
+}
+
+Acceptor::Acceptor(EventLoop *loop, const InetAddress &listenAddr, bool reuseport)
+    : loop_(loop)
+    , acceptSocket_(createNonblocking()) // socket
+    , acceptChannel_(loop, acceptSocket_.fd())
+    , listenning_(false)
+{
+    acceptSocket_.setReuseAddr(true);
+    acceptSocket_.setReusePort(true);
+    acceptSocket_.bindAddress(listenAddr); // bind
+    // TcpServer::start() Acceptor.listen  有新用户的连接，要执行一个回调（connfd=》channel=》subloop）
+    // baseLoop => acceptChannel_(listenfd) => 
+    acceptChannel_.setReadCallback(std::bind(&Acceptor::handleRead, this));
+}
+
+Acceptor::~Acceptor()
+{
+    acceptChannel_.disableAll();
+    acceptChannel_.remove();
+}
+
+void Acceptor::listen()
+{
+    listenning_ = true;
+    acceptSocket_.listen(); // listen
+    acceptChannel_.enableReading(); // acceptChannel_ => Poller
+}
+
+// listenfd有事件发生了，就是有新用户连接了
+void Acceptor::handleRead()
+{
+    InetAddress peerAddr;
+    int connfd = acceptSocket_.accept(&peerAddr);
+    if (connfd >= 0)
+    {
+        if (newConnectionCallback_)
+        {
+            newConnectionCallback_(connfd, peerAddr); // 轮询找到subLoop，唤醒，分发当前的新客户端的Channel
+        }
+        else
+        {
+            ::close(connfd);
+        }
+    }
+    else
+    {
+        LOG_ERROR("%s:%s:%d accept err:%d \n", __FILE__, __FUNCTION__, __LINE__, errno);
+        if (errno == EMFILE)
+        {
+            LOG_ERROR("%s:%s:%d sockfd reached limit! \n", __FILE__, __FUNCTION__, __LINE__);
+        }
+    }
+}
+```
+
+
+
+
+
+## 15.Buffer类
+
+Buffer.h
+
+```cpp
+#pragma once
+
+#include <vector>
+#include <string>
+#include <algorithm>
+
+// 网络库底层的缓冲器类型定义
+class Buffer
+{
+public:
+    static const size_t kCheapPrepend = 8;
+    static const size_t kInitialSize = 1024;
+
+    explicit Buffer(size_t initialSize = kInitialSize)
+        : buffer_(kCheapPrepend + initialSize)
+        , readerIndex_(kCheapPrepend)
+        , writerIndex_(kCheapPrepend)
+    {}
+
+    size_t readableBytes() const 
+    {
+        return writerIndex_ - readerIndex_;
+    }
+
+    size_t writableBytes() const
+    {
+        return buffer_.size() - writerIndex_;
+    }
+
+    size_t prependableBytes() const
+    {
+        return readerIndex_;
+    }
+
+    // 返回缓冲区中可读数据的起始地址
+    const char* peek() const
+    {
+        return begin() + readerIndex_;
+    }
+
+    // onMessage string <- Buffer
+    void retrieve(size_t len)
+    {
+        if (len < readableBytes())
+        {
+            readerIndex_ += len; // 应用只读取了刻度缓冲区数据的一部分，就是len，还剩下readerIndex_ += len -> writerIndex_
+        }
+        else   // len == readableBytes()
+        {
+            retrieveAll();
+        }
+    }
+
+    void retrieveAll()
+    {
+        readerIndex_ = writerIndex_ = kCheapPrepend;
+    }
+
+    // 把onMessage函数上报的Buffer数据，转成string类型的数据返回
+    std::string retrieveAllAsString()
+    {
+        return retrieveAsString(readableBytes()); // 应用可读取数据的长度
+    }
+
+    std::string retrieveAsString(size_t len)
+    {
+        std::string result(peek(), len);
+        retrieve(len); // 上面一句把缓冲区中可读的数据，已经读取出来，这里肯定要对缓冲区进行复位操作
+        return result;
+    }
+
+    // buffer_.size() - writerIndex_    len
+    void ensureWriteableBytes(size_t len)
+    {
+        if (writableBytes() < len)
+        {
+            makeSpace(len); // 扩容函数
+        }
+    }
+
+    // 把[data, data+len]内存上的数据，添加到writable缓冲区当中
+    void append(const char *data, size_t len)
+    {
+        ensureWriteableBytes(len);
+        std::copy(data, data+len, beginWrite());
+        writerIndex_ += len;
+    }
+
+    char* beginWrite()
+    {
+        return begin() + writerIndex_;
+    }
+
+    const char* beginWrite() const
+    {
+        return begin() + writerIndex_;
+    }
+
+    // 从fd上读取数据
+    ssize_t readFd(int fd, int* saveErrno);
+    // 通过fd发送数据
+    ssize_t writeFd(int fd, int* saveErrno);
+private:
+    char* begin()
+    {
+        // it.operator*()
+        return &*buffer_.begin();  // vector底层数组首元素的地址，也就是数组的起始地址
+    }
+    const char* begin() const
+    {
+        return &*buffer_.begin();
+    }
+    void makeSpace(size_t len)
+    {
+        if (writableBytes() + prependableBytes() < len + kCheapPrepend)
+        {
+            buffer_.resize(writerIndex_ + len);
+        }
+        else
+        {
+            size_t readalbe = readableBytes();
+            std::copy(begin() + readerIndex_, 
+                    begin() + writerIndex_,
+                    begin() + kCheapPrepend);
+            readerIndex_ = kCheapPrepend;
+            writerIndex_ = readerIndex_ + readalbe;
+        }
+    }
+
+    std::vector<char> buffer_;
+    size_t readerIndex_;
+    size_t writerIndex_;
+};
+```
+
+
+
+Buffer.cc
+
+```cpp
+#include "Buffer.h"
+
+#include <errno.h>
+#include <sys/uio.h>
+#include <unistd.h>
+
+/**
+ * 从fd上读取数据  Poller工作在LT模式
+ * Buffer缓冲区是有大小的！ 但是从fd上读数据的时候，却不知道tcp数据最终的大小
+ */ 
+ssize_t Buffer::readFd(int fd, int* saveErrno)
+{
+    char extrabuf[65536] = {0}; // 栈上的内存空间  64K
+    
+    struct iovec vec[2];
+    
+    const size_t writable = writableBytes(); // 这是Buffer底层缓冲区剩余的可写空间大小
+    vec[0].iov_base = begin() + writerIndex_;
+    vec[0].iov_len = writable;
+
+    vec[1].iov_base = extrabuf;
+    vec[1].iov_len = sizeof extrabuf;
+    
+    const int iovcnt = (writable < sizeof extrabuf) ? 2 : 1;
+    const ssize_t n = ::readv(fd, vec, iovcnt);
+    if (n < 0)
+    {
+        *saveErrno = errno;
+    }
+    else if (n <= writable) // Buffer的可写缓冲区已经够存储读出来的数据了
+    {
+        writerIndex_ += n;
+    }
+    else // extrabuf里面也写入了数据 
+    {
+        writerIndex_ = buffer_.size();
+        append(extrabuf, n - writable);  // writerIndex_开始写 n - writable大小的数据
+    }
+
+    return n;
+}
+
+ssize_t Buffer::writeFd(int fd, int* saveErrno)
+{
+    ssize_t n = ::write(fd, peek(), readableBytes());
+    if (n < 0)
+    {
+        *saveErrno = errno;
+    }
+    return n;
+}
+```
+
+
+
+## 16.TcpServer类
+
+TcpServer.h
+
+```cpp
+#pragma once
+
+/**
+ * 用户使用muduo编写服务器程序
+ */ 
+#include "EventLoop.h"
+#include "Acceptor.h"
+#include "InetAddress.h"
+#include "noncopyable.h"
+#include "EventLoopThreadPool.h"
+#include "Callbacks.h"
+#include "TcpConnection.h"
+#include "Buffer.h"
+
+#include <functional>
+#include <string>
+#include <memory>
+#include <atomic>
+#include <unordered_map>
+
+// 对外的服务器编程使用的类
+class TcpServer : noncopyable
+{
+public:
+    using ThreadInitCallback = std::function<void(EventLoop*)>;
+
+    enum Option
+    {
+        kNoReusePort,
+        kReusePort,
+    };
+
+    TcpServer(EventLoop *loop,
+                const InetAddress &listenAddr,
+                const std::string &nameArg,
+                Option option = kNoReusePort);
+    ~TcpServer();
+
+    void setThreadInitcallback(const ThreadInitCallback &cb) { threadInitCallback_ = cb; }
+    void setConnectionCallback(const ConnectionCallback &cb) { connectionCallback_ = cb; }
+    void setMessageCallback(const MessageCallback &cb) { messageCallback_ = cb; }
+    void setWriteCompleteCallback(const WriteCompleteCallback &cb) { writeCompleteCallback_ = cb; }
+
+    // 设置底层subloop的个数
+    void setThreadNum(int numThreads);
+
+    // 开启服务器监听
+    void start();
+private:
+    void newConnection(int sockfd, const InetAddress &peerAddr);
+    void removeConnection(const TcpConnectionPtr &conn);
+    void removeConnectionInLoop(const TcpConnectionPtr &conn);
+
+    using ConnectionMap = std::unordered_map<std::string, TcpConnectionPtr>;
+
+    EventLoop *loop_; // baseLoop 用户定义的loop
+
+    const std::string ipPort_;
+    const std::string name_;
+
+    std::unique_ptr<Acceptor> acceptor_; // 运行在mainLoop，任务就是监听新连接事件
+
+    std::shared_ptr<EventLoopThreadPool> threadPool_; // one loop per thread
+
+    ConnectionCallback connectionCallback_; // 有新连接时的回调
+    MessageCallback messageCallback_; // 有读写消息时的回调
+    WriteCompleteCallback writeCompleteCallback_; // 消息发送完成以后的回调
+
+    ThreadInitCallback threadInitCallback_; // loop线程初始化的回调
+
+    std::atomic_int started_;
+
+    int nextConnId_;
+    ConnectionMap connections_; // 保存所有的连接
+};
+```
+
+
+
+TcpServer.cc
+
+```cpp
+#include "TcpServer.h"
+#include "Logger.h"
+#include "TcpConnection.h"
+
+#include <strings.h>
+#include <functional>
+
+static EventLoop* CheckLoopNotNull(EventLoop *loop)
+{
+    if (loop == nullptr)
+    {
+        LOG_FATAL("%s:%s:%d mainLoop is null! \n", __FILE__, __FUNCTION__, __LINE__);
+    }
+    return loop;
+}
+
+TcpServer::TcpServer(EventLoop *loop,
+                const InetAddress &listenAddr,
+                const std::string &nameArg,
+                Option option)
+                : loop_(CheckLoopNotNull(loop))
+                , ipPort_(listenAddr.toIpPort())
+                , name_(nameArg)
+                , acceptor_(new Acceptor(loop, listenAddr, option == kReusePort))
+                , threadPool_(new EventLoopThreadPool(loop, name_))
+                , connectionCallback_()
+                , messageCallback_()
+                , nextConnId_(1)
+                , started_(0)
+{
+    // 当有先用户连接时，会执行TcpServer::newConnection回调
+    acceptor_->setNewConnectionCallback(std::bind(&TcpServer::newConnection, this, 
+        std::placeholders::_1, std::placeholders::_2));
+}
+
+TcpServer::~TcpServer()
+{
+    for (auto &item : connections_)
+    {
+        // 这个局部的shared_ptr智能指针对象，出右括号，可以自动释放new出来的TcpConnection对象资源了
+        TcpConnectionPtr conn(item.second); 
+        item.second.reset();
+
+        // 销毁连接
+        conn->getLoop()->runInLoop(
+            std::bind(&TcpConnection::connectDestroyed, conn)
+        );
+    }
+}
+
+// 设置底层subloop的个数
+void TcpServer::setThreadNum(int numThreads)
+{
+    threadPool_->setThreadNum(numThreads);
+}
+
+// 开启服务器监听   loop.loop()
+void TcpServer::start()
+{
+    if (started_++ == 0) // 防止一个TcpServer对象被start多次
+    {
+        threadPool_->start(threadInitCallback_); // 启动底层的loop线程池
+        loop_->runInLoop(std::bind(&Acceptor::listen, acceptor_.get()));
+    }
+}
+
+// 有一个新的客户端的连接，acceptor会执行这个回调操作
+void TcpServer::newConnection(int sockfd, const InetAddress &peerAddr)
+{
+    // 轮询算法，选择一个subLoop，来管理channel
+    EventLoop *ioLoop = threadPool_->getNextLoop(); 
+    char buf[64] = {0};
+    snprintf(buf, sizeof buf, "-%s#%d", ipPort_.c_str(), nextConnId_);
+    ++nextConnId_;
+    std::string connName = name_ + buf;
+
+    LOG_INFO("TcpServer::newConnection [%s] - new connection [%s] from %s \n",
+        name_.c_str(), connName.c_str(), peerAddr.toIpPort().c_str());
+
+    // 通过sockfd获取其绑定的本机的ip地址和端口信息
+    sockaddr_in local;
+    ::bzero(&local, sizeof local);
+    socklen_t addrlen = sizeof local;
+    if (::getsockname(sockfd, (sockaddr*)&local, &addrlen) < 0)
+    {
+        LOG_ERROR("sockets::getLocalAddr");
+    }
+    InetAddress localAddr(local);
+
+    // 根据连接成功的sockfd，创建TcpConnection连接对象
+    TcpConnectionPtr conn(new TcpConnection(
+                            ioLoop,
+                            connName,
+                            sockfd,   // Socket Channel
+                            localAddr,
+                            peerAddr));
+    connections_[connName] = conn;
+    // 下面的回调都是用户设置给TcpServer=>TcpConnection=>Channel=>Poller=>notify channel调用回调
+    conn->setConnectionCallback(connectionCallback_);
+    conn->setMessageCallback(messageCallback_);
+    conn->setWriteCompleteCallback(writeCompleteCallback_);
+
+    // 设置了如何关闭连接的回调   conn->shutDown()
+    conn->setCloseCallback(
+        std::bind(&TcpServer::removeConnection, this, std::placeholders::_1)
+    );
+
+    // 直接调用TcpConnection::connectEstablished
+    ioLoop->runInLoop(std::bind(&TcpConnection::connectEstablished, conn));
+}
+
+void TcpServer::removeConnection(const TcpConnectionPtr &conn)
+{
+    loop_->runInLoop(
+        std::bind(&TcpServer::removeConnectionInLoop, this, conn)
+    );
+}
+
+void TcpServer::removeConnectionInLoop(const TcpConnectionPtr &conn)
+{
+    LOG_INFO("TcpServer::removeConnectionInLoop [%s] - connection %s\n", 
+        name_.c_str(), conn->name().c_str());
+
+    connections_.erase(conn->name());
+    EventLoop *ioLoop = conn->getLoop(); 
+    ioLoop->queueInLoop(
+        std::bind(&TcpConnection::connectDestroyed, conn)
+    );
+}
+```
+
