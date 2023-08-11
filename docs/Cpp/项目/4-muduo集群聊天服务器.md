@@ -66,7 +66,7 @@ chatserver
 
 chatserver是服务器层，主要提供服务器网络层的代码。
 
-chatserver.h
+### chatserver.h
 
 ```cpp
 #ifndef CHATSERVER_H
@@ -105,7 +105,7 @@ private:
 #endif
 ```
 
-chatserver.cpp
+### chatserver.cpp
 
 ```cpp
 #include "chatserver.hpp"
@@ -178,7 +178,7 @@ void ChatServer::onMessage(const TcpConnectionPtr &conn,
 
 提供业务方法
 
-chatservice.h
+### chatservice.h
 
 ```cpp
 #ifndef CHATSERVICE_H
@@ -257,7 +257,7 @@ private:
 #endif
 ```
 
-chatservice.cpp
+### chatservice.cpp
 
 ```cpp
 #include "chatservice.hpp"
@@ -621,7 +621,7 @@ void ChatService::handleRedisSubscribeMessage(int userid, string msg)
 
 ## 4.数据库DB类
 
-db.h
+### db.h
 
 ```cpp
 #ifndef DB_H
@@ -654,7 +654,7 @@ private:
 #endif
 ```
 
-db.cpp
+### db.cpp
 
 ```cpp
 #include "db.h"
@@ -760,7 +760,7 @@ enum EnMsgType
 
 ## 6.User和User_model
 
-User.h
+### User.h
 
 ```cpp
 #ifndef USER_H
@@ -801,7 +801,7 @@ protected:
 #endif
 ```
 
-UserModel.h
+### UserModel.h
 
 ```cpp
 #ifndef USERMODEL_H
@@ -828,7 +828,7 @@ public:
 #endif
 ```
 
-UserModel.cpp
+### UserModel.cpp
 
 ```cpp
 #include "usermodel.hpp"
@@ -917,6 +917,396 @@ void UserModel::resetState()
     {
         mysql.update(sql);
     }
+}
+```
+
+## 7.离线消息offlinemessagemodel
+
+### offlinemessagemodel.h
+
+```cpp
+#ifndef OFFLINEMESSAGEMODEL_H
+#define OFFLINEMESSAGEMODEL_H
+
+#include <string>
+#include <vector>
+using namespace std;
+
+// 提供离线消息表的操作接口方法
+class OfflineMsgModel
+{
+public:
+    // 存储用户的离线消息
+    void insert(int userid, string msg);
+
+    // 删除用户的离线消息
+    void remove(int userid);
+
+    // 查询用户的离线消息
+    vector<string> query(int userid);
+};
+
+#endif
+```
+
+### offlinemessagemodel.cpp
+
+```cpp
+#include "offlinemessagemodel.hpp"
+#include "db.h"
+
+// 存储用户的离线消息
+void OfflineMsgModel::insert(int userid, string msg)
+{
+    // 1.组装sql语句
+    char sql[1024] = {0};
+    sprintf(sql, "insert into offlinemessage values(%d, '%s')", userid, msg.c_str());
+
+    MySQL mysql;
+    if (mysql.connect())
+    {
+        mysql.update(sql);
+    }
+}
+
+// 删除用户的离线消息
+void OfflineMsgModel::remove(int userid)
+{
+    // 1.组装sql语句
+    char sql[1024] = {0};
+    sprintf(sql, "delete from offlinemessage where userid=%d", userid);
+
+    MySQL mysql;
+    if (mysql.connect())
+    {
+        mysql.update(sql);
+    }
+}
+
+// 查询用户的离线消息
+vector<string> OfflineMsgModel::query(int userid)
+{
+    // 1.组装sql语句
+    char sql[1024] = {0};
+    sprintf(sql, "select message from offlinemessage where userid = %d", userid);
+
+    vector<string> vec;
+    MySQL mysql;
+    if (mysql.connect())
+    {
+        MYSQL_RES *res = mysql.query(sql);
+        if (res != nullptr)
+        {
+            // 把userid用户的所有离线消息放入vec中返回
+            MYSQL_ROW row;
+            while((row = mysql_fetch_row(res)) != nullptr)
+            {
+                vec.push_back(row[0]);
+            }
+            mysql_free_result(res);
+            return vec;
+        }
+    }
+    return vec;
+}
+```
+
+## 8.friendmodel
+
+### friendmodel.hpp
+
+```cpp
+#ifndef FRIENDMODEL_H
+#define FRIENDMODEL_H
+
+#include "user.hpp"
+#include <vector>
+using namespace std;
+
+// 维护好友信息的操作接口方法
+class FriendModel
+{
+public:
+    // 添加好友关系
+    void insert(int userid, int friendid);
+
+    // 返回用户好友列表
+    vector<User> query(int userid);
+};
+
+#endif
+```
+
+### friendmodel.cpp
+
+```cpp
+#include "friendmodel.hpp"
+#include "db.h"
+
+// 添加好友关系
+void FriendModel::insert(int userid, int friendid)
+{
+    // 1.组装sql语句
+    char sql[1024] = {0};
+    sprintf(sql, "insert into friend values(%d, %d)", userid, friendid);
+
+    MySQL mysql;
+    if (mysql.connect())
+    {
+        mysql.update(sql);
+    }
+}
+
+// 返回用户好友列表
+vector<User> FriendModel::query(int userid)
+{
+    // 1.组装sql语句
+    char sql[1024] = {0};
+
+    sprintf(sql, "select a.id,a.name,a.state from user a inner join friend b on b.friendid = a.id where b.userid=%d", userid);
+
+    vector<User> vec;
+    MySQL mysql;
+    if (mysql.connect())
+    {
+        MYSQL_RES *res = mysql.query(sql);
+        if (res != nullptr)
+        {
+            // 把userid用户的所有离线消息放入vec中返回
+            MYSQL_ROW row;
+            while((row = mysql_fetch_row(res)) != nullptr)
+            {
+                User user;
+                user.setId(atoi(row[0]));
+                user.setName(row[1]);
+                user.setState(row[2]);
+                vec.push_back(user);
+            }
+            mysql_free_result(res);
+            return vec;
+        }
+    }
+    return vec;
+}
+```
+
+## 9.群聊业务
+
+### groupuser.hpp
+
+```cpp
+#ifndef GROUPUSER_H
+#define GROUPUSER_H
+
+#include "user.hpp"
+
+// 群组用户，多了一个role角色信息，从User类直接继承，复用User的其它信息
+class GroupUser : public User
+{
+public:
+    void setRole(string role) { this->role = role; }
+    string getRole() { return this->role; }
+
+private:
+    string role;
+};
+
+#endif
+```
+
+### group.hpp
+
+```cpp
+#ifndef GROUP_H
+#define GROUP_H
+
+#include "groupuser.hpp"
+#include <string>
+#include <vector>
+using namespace std;
+
+// User表的ORM类
+class Group
+{
+public:
+    Group(int id = -1, string name = "", string desc = "")
+    {
+        this->id = id;
+        this->name = name;
+        this->desc = desc;
+    }
+
+    void setId(int id) { this->id = id; }
+    void setName(string name) { this->name = name; }
+    void setDesc(string desc) { this->desc = desc; }
+
+    int getId() { return this->id; }
+    string getName() { return this->name; }
+    string getDesc() { return this->desc; }
+    vector<GroupUser> &getUsers() { return this->users; }
+
+private:
+    int id;
+    string name;
+    string desc;
+    vector<GroupUser> users;
+};
+
+#endif
+```
+
+### groupmodel.hpp
+
+```cpp
+#ifndef GROUPMODEL_H
+#define GROUPMODEL_H
+
+#include "group.hpp"
+#include <string>
+#include <vector>
+using namespace std;
+
+// 维护群组信息的操作接口方法
+class GroupModel
+{
+public:
+    // 创建群组
+    bool createGroup(Group &group);
+    // 加入群组
+    void addGroup(int userid, int groupid, string role);
+    // 查询用户所在群组信息
+    vector<Group> queryGroups(int userid);
+    // 根据指定的groupid查询群组用户id列表，除userid自己，主要用户群聊业务给群组其它成员群发消息
+    vector<int> queryGroupUsers(int userid, int groupid);
+};
+
+#endif
+```
+
+### groupmodel.cpp
+
+```cpp
+#include "groupmodel.hpp"
+#include "db.h"
+
+// 创建群组
+bool GroupModel::createGroup(Group &group)
+{
+    // 1.组装sql语句
+    char sql[1024] = {0};
+    sprintf(sql, "insert into allgroup(groupname, groupdesc) values('%s', '%s')",
+            group.getName().c_str(), group.getDesc().c_str());
+
+    MySQL mysql;
+    if (mysql.connect())
+    {
+        if (mysql.update(sql))
+        {
+            group.setId(mysql_insert_id(mysql.getConnection()));
+            return true;
+        }
+    }
+
+    return false;
+}
+
+// 加入群组
+void GroupModel::addGroup(int userid, int groupid, string role)
+{
+    // 1.组装sql语句
+    char sql[1024] = {0};
+    sprintf(sql, "insert into groupuser values(%d, %d, '%s')",
+            groupid, userid, role.c_str());
+
+    MySQL mysql;
+    if (mysql.connect())
+    {
+        mysql.update(sql);
+    }
+}
+
+// 查询用户所在群组信息
+vector<Group> GroupModel::queryGroups(int userid)
+{
+    /*
+    1. 先根据userid在groupuser表中查询出该用户所属的群组信息
+    2. 在根据群组信息，查询属于该群组的所有用户的userid，并且和user表进行多表联合查询，查出用户的详细信息
+    */
+    char sql[1024] = {0};
+    sprintf(sql, "select a.id,a.groupname,a.groupdesc from allgroup a inner join \
+         groupuser b on a.id = b.groupid where b.userid=%d",
+            userid);
+
+    vector<Group> groupVec;
+
+    MySQL mysql;
+    if (mysql.connect())
+    {
+        MYSQL_RES *res = mysql.query(sql);
+        if (res != nullptr)
+        {
+            MYSQL_ROW row;
+            // 查出userid所有的群组信息
+            while ((row = mysql_fetch_row(res)) != nullptr)
+            {
+                Group group;
+                group.setId(atoi(row[0]));
+                group.setName(row[1]);
+                group.setDesc(row[2]);
+                groupVec.push_back(group);
+            }
+            mysql_free_result(res);
+        }
+    }
+
+    // 查询群组的用户信息
+    for (Group &group : groupVec)
+    {
+        sprintf(sql, "select a.id,a.name,a.state,b.grouprole from user a \
+            inner join groupuser b on b.userid = a.id where b.groupid=%d",
+                group.getId());
+
+        MYSQL_RES *res = mysql.query(sql);
+        if (res != nullptr)
+        {
+            MYSQL_ROW row;
+            while ((row = mysql_fetch_row(res)) != nullptr)
+            {
+                GroupUser user;
+                user.setId(atoi(row[0]));
+                user.setName(row[1]);
+                user.setState(row[2]);
+                user.setRole(row[3]);
+                group.getUsers().push_back(user);
+            }
+            mysql_free_result(res);
+        }
+    }
+    return groupVec;
+}
+
+// 根据指定的groupid查询群组用户id列表，除userid自己，主要用户群聊业务给群组其它成员群发消息
+vector<int> GroupModel::queryGroupUsers(int userid, int groupid)
+{
+    char sql[1024] = {0};
+    sprintf(sql, "select userid from groupuser where groupid = %d and userid != %d", groupid, userid);
+
+    vector<int> idVec;
+    MySQL mysql;
+    if (mysql.connect())
+    {
+        MYSQL_RES *res = mysql.query(sql);
+        if (res != nullptr)
+        {
+            MYSQL_ROW row;
+            while ((row = mysql_fetch_row(res)) != nullptr)
+            {
+                idVec.push_back(atoi(row[0]));
+            }
+            mysql_free_result(res);
+        }
+    }
+    return idVec;
 }
 ```
 
