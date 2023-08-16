@@ -205,6 +205,8 @@ add_executable(provider ${SRC_LIST})
 target_link_libraries(provider mprpc protobuf)
 ```
 
+
+
 ### userservice.cc
 
 ```cpp
@@ -1021,6 +1023,376 @@ void RpcProvider::SendRpcResponse(const muduo::net::TcpConnectionPtr& conn, goog
         std::cout << "serialize response_str error!" << std::endl; 
     }
     conn->shutdown(); // 模拟http的短链接服务，由rpcprovider主动断开连接
+}
+```
+
+## 7.mprpccontroller
+
+### mprpccontroller.h
+
+```cpp
+#pragma once
+#include <google/protobuf/service.h>
+#include <string>
+
+class MprpcController : public google::protobuf::RpcController
+{
+public:
+    MprpcController();
+    void Reset();
+    bool Failed() const;
+    std::string ErrorText() const;
+    void SetFailed(const std::string& reason);
+
+    // 目前未实现具体的功能
+    void StartCancel();
+    bool IsCanceled() const;
+    void NotifyOnCancel(google::protobuf::Closure* callback);
+private:
+    bool m_failed; // RPC方法执行过程中的状态
+    std::string m_errText; // RPC方法执行过程中的错误信息
+};
+```
+
+### mprpccontroller.cc
+
+```cpp
+#include "mprpccontroller.h"
+
+MprpcController::MprpcController()
+{
+    m_failed = false;
+    m_errText = "";
+}
+
+void MprpcController::Reset()
+{
+    m_failed = false;
+    m_errText = "";
+}
+
+bool MprpcController::Failed() const
+{
+    return m_failed;
+}
+
+std::string MprpcController::ErrorText() const
+{
+    return m_errText;
+}
+
+void MprpcController::SetFailed(const std::string& reason)
+{
+    m_failed = true;
+    m_errText = reason;
+}
+
+// 目前未实现具体的功能
+void MprpcController::StartCancel(){}
+bool MprpcController::IsCanceled() const {return false;}
+void MprpcController::NotifyOnCancel(google::protobuf::Closure* callback) {}
+```
+
+## 8.logger
+
+### lockqueue.h
+
+```cpp
+#pragma once
+#include <queue>
+#include <thread>
+#include <mutex> // pthread_mutex_t
+#include <condition_variable> // pthread_condition_t
+
+// 异步写日志的日志队列
+template<typename T>
+class LockQueue
+{
+public:
+    // 多个worker线程都会写日志queue 
+    void Push(const T &data)
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        m_queue.push(data);
+        m_condvariable.notify_one();
+    }
+
+    // 一个线程读日志queue，写日志文件
+    T Pop()
+    {
+        std::unique_lock<std::mutex> lock(m_mutex);
+        while (m_queue.empty())
+        {
+            // 日志队列为空，线程进入wait状态
+            m_condvariable.wait(lock);
+        }
+
+        T data = m_queue.front();
+        m_queue.pop();
+        return data;
+    }
+private:
+    std::queue<T> m_queue;
+    std::mutex m_mutex;
+    std::condition_variable m_condvariable;
+};
+```
+
+
+
+### logger.h
+
+```cpp
+#pragma once
+#include "lockqueue.h"
+#include <string>
+
+// 定义宏 LOG_INFO("xxx %d %s", 20, "xxxx")
+#define LOG_INFO(logmsgformat, ...) \
+    do \
+    {  \
+        Logger &logger = Logger::GetInstance(); \
+        logger.SetLogLevel(INFO); \
+        char c[1024] = {0}; \
+        snprintf(c, 1024, logmsgformat, ##__VA_ARGS__); \
+        logger.Log(c); \
+    } while(0) \
+
+#define LOG_ERR(logmsgformat, ...) \
+    do \
+    {  \
+        Logger &logger = Logger::GetInstance(); \
+        logger.SetLogLevel(ERROR); \
+        char c[1024] = {0}; \
+        snprintf(c, 1024, logmsgformat, ##__VA_ARGS__); \
+        logger.Log(c); \
+    } while(0) \
+
+// 定义日志级别
+enum LogLevel
+{
+    INFO,  // 普通信息
+    ERROR, // 错误信息
+};
+
+// Mprpc框架提供的日志系统
+class Logger
+{
+public:
+    // 获取日志的单例
+    static Logger& GetInstance();
+    // 设置日志级别 
+    void SetLogLevel(LogLevel level);
+    // 写日志
+    void Log(std::string msg);
+private:
+    int m_loglevel; // 记录日志级别
+    LockQueue<std::string>  m_lckQue; // 日志缓冲队列
+
+    Logger();
+    Logger(const Logger&) = delete;
+    Logger(Logger&&) = delete;
+};
+```
+
+### logger.cc
+
+```cpp
+#include "logger.h"
+#include <time.h>
+#include <iostream>
+
+// 获取日志的单例
+Logger& Logger::GetInstance()
+{
+    static Logger logger;
+    return logger;
+}
+
+Logger::Logger()
+{
+    // 启动专门的写日志线程
+    std::thread writeLogTask([&](){
+        for (;;)
+        {
+            // 获取当前的日期，然后取日志信息，写入相应的日志文件当中 a+
+            time_t now = time(nullptr);
+            tm *nowtm = localtime(&now);
+
+            char file_name[128];
+            sprintf(file_name, "%d-%d-%d-log.txt", nowtm->tm_year+1900, nowtm->tm_mon+1, nowtm->tm_mday);
+
+            FILE *pf = fopen(file_name, "a+");
+            if (pf == nullptr)
+            {
+                std::cout << "logger file : " << file_name << " open error!" << std::endl;
+                exit(EXIT_FAILURE);
+            }
+
+            std::string msg = m_lckQue.Pop();
+
+            char time_buf[128] = {0};
+            sprintf(time_buf, "%d:%d:%d =>[%s] ", 
+                    nowtm->tm_hour, 
+                    nowtm->tm_min, 
+                    nowtm->tm_sec,
+                    (m_loglevel == INFO ? "info" : "error"));
+            msg.insert(0, time_buf);
+            msg.append("\n");
+
+            fputs(msg.c_str(), pf);
+            fclose(pf);
+        }
+    });
+    // 设置分离线程，守护线程
+    writeLogTask.detach();
+}
+
+// 设置日志级别 
+void Logger::SetLogLevel(LogLevel level)
+{
+    m_loglevel = level;
+}
+
+// 写日志， 把日志信息写入lockqueue缓冲区当中
+void Logger::Log(std::string msg)
+{
+    m_lckQue.Push(msg);
+}
+```
+
+## 9.zookeeperutil
+
+### zookeeperutil.h
+
+```cpp
+#pragma once
+
+#include <semaphore.h>
+#include <zookeeper/zookeeper.h>
+#include <string>
+
+// 封装的zk客户端类
+class ZkClient
+{
+public:
+    ZkClient();
+    ~ZkClient();
+    // zkclient启动连接zkserver
+    void Start();
+    // 在zkserver上根据指定的path创建znode节点
+    void Create(const char *path, const char *data, int datalen, int state=0);
+    // 根据参数指定的znode节点路径，或者znode节点的值
+    std::string GetData(const char *path);
+private:
+    // zk的客户端句柄
+    zhandle_t *m_zhandle;
+};
+```
+
+### zookeeperutil.cc
+
+```cpp
+#include "zookeeperutil.h"
+#include "mprpcapplication.h"
+#include <semaphore.h>
+#include <iostream>
+
+// 全局的watcher观察器   zkserver给zkclient的通知
+void global_watcher(zhandle_t *zh, int type,
+                   int state, const char *path, void *watcherCtx)
+{
+    if (type == ZOO_SESSION_EVENT)  // 回调的消息类型是和会话相关的消息类型
+	{
+		if (state == ZOO_CONNECTED_STATE)  // zkclient和zkserver连接成功
+		{
+			sem_t *sem = (sem_t*)zoo_get_context(zh);
+            sem_post(sem);
+		}
+	}
+}
+
+ZkClient::ZkClient() : m_zhandle(nullptr)
+{
+}
+
+ZkClient::~ZkClient()
+{
+    if (m_zhandle != nullptr)
+    {
+        zookeeper_close(m_zhandle); // 关闭句柄，释放资源  MySQL_Conn
+    }
+}
+
+// 连接zkserver
+void ZkClient::Start()
+{
+    std::string host = MprpcApplication::GetInstance().GetConfig().Load("zookeeperip");
+    std::string port = MprpcApplication::GetInstance().GetConfig().Load("zookeeperport");
+    std::string connstr = host + ":" + port;
+    
+	/*
+	zookeeper_mt：多线程版本
+	zookeeper的API客户端程序提供了三个线程
+	API调用线程 
+	网络I/O线程  pthread_create  poll
+	watcher回调线程 pthread_create
+	*/
+    m_zhandle = zookeeper_init(connstr.c_str(), global_watcher, 30000, nullptr, nullptr, 0);
+    if (nullptr == m_zhandle) 
+    {
+        std::cout << "zookeeper_init error!" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
+    sem_t sem;
+    sem_init(&sem, 0, 0);
+    zoo_set_context(m_zhandle, &sem);
+
+    sem_wait(&sem);
+    std::cout << "zookeeper_init success!" << std::endl;
+}
+
+void ZkClient::Create(const char *path, const char *data, int datalen, int state)
+{
+    char path_buffer[128];
+    int bufferlen = sizeof(path_buffer);
+    int flag;
+	// 先判断path表示的znode节点是否存在，如果存在，就不再重复创建了
+	flag = zoo_exists(m_zhandle, path, 0, nullptr);
+	if (ZNONODE == flag) // 表示path的znode节点不存在
+	{
+		// 创建指定path的znode节点了
+		flag = zoo_create(m_zhandle, path, data, datalen,
+			&ZOO_OPEN_ACL_UNSAFE, state, path_buffer, bufferlen);
+		if (flag == ZOK)
+		{
+			std::cout << "znode create success... path:" << path << std::endl;
+		}
+		else
+		{
+			std::cout << "flag:" << flag << std::endl;
+			std::cout << "znode create error... path:" << path << std::endl;
+			exit(EXIT_FAILURE);
+		}
+	}
+}
+
+// 根据指定的path，获取znode节点的值
+std::string ZkClient::GetData(const char *path)
+{
+    char buffer[64];
+	int bufferlen = sizeof(buffer);
+	int flag = zoo_get(m_zhandle, path, 0, buffer, &bufferlen, nullptr);
+	if (flag != ZOK)
+	{
+		std::cout << "get znode error... path:" << path << std::endl;
+		return "";
+	}
+	else
+	{
+		return buffer;
+	}
 }
 ```
 
