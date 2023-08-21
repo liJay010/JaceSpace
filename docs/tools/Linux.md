@@ -29,3 +29,18 @@
 
 
 
+### Linux挂载硬盘
+
+```sh
+#查看 目录 挂载在哪个硬盘
+df -h 目录
+#查看 所有挂载的硬盘
+df -h 
+
+#查看 所有挂载的硬盘 和 没有挂载的硬盘
+lsblk -f
+
+#挂载硬盘 /dev/sdd1 到 /mnt/disk6_brain 目录
+sudo mount /dev/sdd1 /mnt/disk6_brain 目录
+```
+
