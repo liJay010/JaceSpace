@@ -34,3 +34,42 @@ move(val) //左值转换为右值引用
 foward(val) //类型完美转发，能够识别左值或者右值类型
 ```
 
+## 3.cpp11标准
+
+### 3.1 关键字语法
+
+**auto**：右值自动推导
+
+**nullptr**：指针专用，能够和整数进行区别
+
+**foreach**:可以遍历容器，for(int x:num)
+
+**右值引用**：move(),forward()
+
+**模板新特性**：typename ... A （可变参数）
+
+
+
+### 3.2 绑定器和函数对象
+
+**function:函数对象**
+
+**bind:绑定器**
+
+**lambda表达式**
+
+
+
+### 3.3 智能指针
+
+shared_ptr 和 weak_ptr
+
+
+
+### 3.4 容器
+
+**unordered_set、unordered_map**
+
+**array**:数组固定大小
+
+**forward_list**:前向链表
