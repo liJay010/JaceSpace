@@ -73,3 +73,37 @@ shared_ptr 和 weak_ptr
 **array**:数组固定大小
 
 **forward_list**:前向链表
+
+## 4.emplace_back
+
+在C++中，`emplace_back()`和`push_back()`是用于向容器的尾部添加元素的成员函数，但它们有一些区别。
+
+`push_back()`函数将一个元素副本追加到容器的末尾。这意味着在将元素插入容器之前，必须创建该元素的副本。这对于类似整数、浮点数和指针等简单类型的元素来说是很方便的。
+
+```cpp
+std::vector<int> myVector;
+myVector.push_back(10);  // 添加 10 到向量末尾
+myVector.push_back(20);  // 添加 20 到向量末尾
+```
+
+
+
+`emplace_back()`函数与`push_back()`函数类似，但它使用给定的参数在容器的末尾直接构造一个新元素。这意味着可以直接将参数传递给元素的构造函数来创建元素，而不需要创建副本。这对于复杂的对象类型非常有用，可以避免不必要的对象复制和降低性能开销。
+
+```cpp
+struct MyObject {
+    int data;
+
+    MyObject(int value) : data(value) {
+        std::cout << "Constructor called with value: " << value << std::endl;
+    }
+};
+
+std::vector<MyObject> myVector;
+myVector.emplace_back(10);  // 直接构造 MyObject 对象并添加到向量末尾
+myVector.emplace_back(20);  // 直接构造 MyObject 对象并添加到向量末尾
+```
+
+
+
+使用`emplace_back()`函数可以在不创建额外副本的情况下，直接在容器尾部构造对象。这在性能要求高的情况下，能够降低开销并提高效率。
