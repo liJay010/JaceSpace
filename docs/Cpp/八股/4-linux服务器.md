@@ -851,7 +851,7 @@ System v是Unix操作系统众多版本的一个分支，它最初是由AT&T在1
 1. System v信号量指的是计数信号量集；Posix 信号量指的是单个计数信号量。
 2. Posix信号量是基于内存的，即信号量值是放在共享内存中的，它是由可能与文件系统中的路径名对应的名字来标识的。System v信号量测试基于内核的，它放在内核里面，相同点都是它们都可以用于进程或者线程间的同步。
 3. POSIX信号量常用于线程；system v信号量常用于进程的同步。
-4. POSIX 信号量的头文件是 <semaphore.h>，而 System V 信号量的头文件是 <sys/sem.h>。
+4. POSIX 信号量的头文件是 \<semaphore.h\>，而 System V 信号量的头文件是 \<sys/sem.h\>。
 
 
 
