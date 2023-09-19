@@ -150,6 +150,8 @@ QPS(Query Per Second) 即每秒查询率，QPS 是对一个特定的查询服务
 
 参考 ：https://blog.csdn.net/T_Solotov/article/details/124044175
 
+[长文梳理Muduo库核心代码及优秀编程细节剖析_陈硕muduo库_我在地铁站里吃闸机的博客-CSDN博客](https://blog.csdn.net/T_Solotov/article/details/124044175)
+
 ## **零、写在前面**
 
 本文所涉及的 muduo 源码以最新版本（2022.11.01 提交）为例，`/examples/simple/echo`下是 muduo 提供的回声服务器的源码。一个简单的 echo server 的主函数如下，其中 `EchoServer` 中包含一个 `TcpServer` 对象，并在构造函数中绑定了 `onConnection` 和 `onMessage` 回调。
