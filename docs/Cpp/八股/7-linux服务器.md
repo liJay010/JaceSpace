@@ -77,7 +77,7 @@
 
    - 态库的使用
 
-   <img src="https://cdn.jsdelivr.net/gh/luogou/cloudimg/data/20210608145829.png" alt="image-20210509140337810" style="zoom: 50%;" align="left" />
+   <img src="https://cdn.jsdelivr.net/gh/luogou/cloudimg/data/20210608145829.png"  />
 
 3. 动态库的制作(so代表动态库)
    - 命名规则：libxxx.so
@@ -103,7 +103,7 @@
 
 对任意一个文件使用ls -l命令，如下图所示：
 
-<img src="https://cdn.jsdelivr.net/gh/luogou/cloudimg/data/20210608145838.png" alt="image-20210512102626440" style="float: left;" />
+<img src="https://cdn.jsdelivr.net/gh/luogou/cloudimg/data/20210608145838.png"/>
 
 **任意取一行，如：drwxr-xr-x  2 root root 4096 2009-01-14 17:34 bin**
 
