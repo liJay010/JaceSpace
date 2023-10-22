@@ -44,3 +44,22 @@ lsblk -f
 sudo mount /dev/sdd1 /mnt/disk6_brain 目录
 ```
 
+
+
+### tmux后台（可一直保活，用于nohup需要输入密码的情况）
+
+```sh
+#创建一个名为 XXX的后台窗口
+tmux new -s XXX
+
+#列出所有会话：
+tmux list-sessions
+
+#连接到已存在的会话：
+tmux attach-session -t session-name
+
+#杀死会话：
+tmux kill-session -t session-name
+
+```
+
