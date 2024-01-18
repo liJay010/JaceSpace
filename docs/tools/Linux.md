@@ -71,3 +71,100 @@ clash开端口
 export https_proxy=http://127.0.0.1:7890 http_proxy=http://127.0.0.1:7890 all_proxy=socks5://127.0.0.1:7890
 ```
 
+
+
+## VScode调试
+
+```json
+{
+    // 使用 IntelliSense 了解相关属性。 
+    // 悬停以查看现有属性的描述。
+    // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    //"pythonPath":"/home/lxj/anaconda3/envs/layoutlmv3/bin/python3.7",
+
+    "configurations": [
+    
+        {
+            "python":"/home/lxj/anaconda3/envs/layoutlmv3/bin/python3.7",
+            "name": "LayoutLMV3",
+            "type": "python",
+            "request": "launch",
+            "program": "/data1/lxj/workspace/layout/unilm/layoutlmv3/examples/object_detection/train_net.py",
+            "console": "integratedTerminal",
+            "env": {
+                "CUDA_VISIBLE_DEVICES": "1"
+            },
+            "justMyCode": true,
+            "args": [
+                "--config-file",
+                "/data1/lxj/workspace/layout/unilm/layoutlmv3/examples/object_detection/cascade_layoutlmv3.yaml",
+                "--num-gpus",
+                "1",
+            ]
+        },
+        {
+            "name": "DINO-res50",
+            "type": "python",
+            "request": "launch",
+            "program": "/data1/lxj/workspace/layout/unilm/layoutlmv3/examples/object_detection/train_net.py",
+            "console": "integratedTerminal",
+            "env": {
+                "CUDA_VISIBLE_DEVICES": "1"
+            },
+            "justMyCode": true,
+            "args": [
+                "--config-file",
+                "/data1/lxj/workspace/layout/unilm/layoutlmv3/examples/object_detection/cascade_layoutlmv3.yaml",
+                "--num-gpus",
+                "1",
+            ]
+        },
+        {
+            "name": "DINO-swin",
+            "type": "python",
+            "request": "launch",
+            "program": "/data1/lxj/workspace/doclayout/DINO/main.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": [
+                "--output_dir",
+                "/data1/lxj/workspace/doclayout/DINO/logs/DINO/Swin-MS4",
+                "-c",
+                "/data1/lxj/workspace/doclayout/DINO/config/DINO/DINO_4scale_swin.py",
+                "--coco_path",
+                "/data1/lxj/workspace/doclayout/DINO/data",
+                "--options",
+                "dn_scalar=100 embed_init_tgt=TRUE",
+                "dn_label_coef=1.0 dn_bbox_coef=1.0 use_ema=False dn_box_noise_scale=1.0"
+            ]
+        },
+        {
+            "name": "DINO-swin-5cale",
+            "type": "python",
+            "request": "launch",
+            "program": "/data1/lxj/workspace/doclayout/DINO/main.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": [
+                "--output_dir",
+                "/data1/lxj/workspace/doclayout/DINO/logs/DINO/DINO_5scale.py",
+                "-c",
+                "/data1/lxj/workspace/doclayout/DINO/config/DINO/DINO_4scale_swin.py",
+                "--coco_path",
+                "/data1/lxj/workspace/doclayout/DINO/data",
+                "--options",
+                "dn_scalar=100 embed_init_tgt=TRUE",
+                "dn_label_coef=1.0 dn_bbox_coef=1.0 use_ema=False dn_box_noise_scale=1.0"
+            ]
+        },
+    ]
+}
+```
+
+## 添加显卡环境变量
+
+```
+export CUDA_VISIBLE_DEVICES=3 && python ***
+```
+
