@@ -168,3 +168,6 @@ export https_proxy=http://127.0.0.1:7890 http_proxy=http://127.0.0.1:7890 all_pr
 export CUDA_VISIBLE_DEVICES=3 && python ***
 ```
 
+## github time out
+
+https://blog.csdn.net/tom_wong666/article/details/128961438
