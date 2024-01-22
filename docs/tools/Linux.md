@@ -63,6 +63,14 @@ tmux kill-session -t session-name
 
 ```
 
+### 查看指定文件夹内文件数量
+
+```sh
+ls -l dir | grep "^-" | wc -l
+```
+
+
+
 ## 梯子
 
 clash开端口
