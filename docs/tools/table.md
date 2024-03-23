@@ -56,9 +56,13 @@ if cfg.trainer.mode == "train":
 
 #### 2.指定显卡
 
+```python
 import os
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "4,5,6,7"
+```
+
+
 
 ### 3.调试
 
