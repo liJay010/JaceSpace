@@ -75,8 +75,8 @@
 1.**CPU内存**，称之为Host Memory
 
  					  **Pageable Memory**：可分页内存，可能被换入换出
-
-  					 **Page-Locked Memory**：页锁定内存，不能被换入换出
+ 	
+ 					 **Page-Locked Memory**：页锁定内存，不能被换入换出
 
 ​			**GPU**可以直接访问**pinned memory**而不能访问**pageable memory**
 
@@ -255,6 +255,31 @@ void test_print(const float* pdata, int ndata){
 }
 ```
 
+```cpp
+//
+int grids[] = {1, 2, 3};     // gridDim.x  gridDim.y  gridDim.z 
+int blocks[] = {1024, 1, 1}; // blockDim.x blockDim.y blockDim.z 
+launch(grids, blocks);       // grids表示的是有几个大格子，blocks表示的是每个大格子里面有多少个小格子
+
+__global__ void demo_kernel(){
+
+    if(blockIdx.x == 0 && threadIdx.x == 0)
+        printf("Run kernel. blockIdx = %d,%d,%d  threadIdx = %d,%d,%d\n",
+            blockIdx.x, blockIdx.y, blockIdx.z,
+            threadIdx.x, threadIdx.y, threadIdx.z
+        );
+}
+
+void launch(int* grids, int* blocks){
+
+    dim3 grid_dims(grids[0], grids[1], grids[2]);
+    dim3 block_dims(blocks[0], blocks[1], blocks[2]);
+    demo_kernel<<<grid_dims, block_dims, 0, nullptr>>>();
+}
+```
+
+
+
 ### 5.共享内存
 
 1.共享内存因为更靠近计算单元，所以访问速度更快
@@ -331,5 +356,9 @@ void launch(){
     demo2_kernel<<<2, 5, 0, nullptr>>>();
 }
 ```
+
+
+
+
 
 ### 6.
