@@ -103,12 +103,6 @@ const config = {
                         label: "tools",
                         position: "left",
                     },
-                    {
-                      to: "/docs/java/java语言",
-                      activeBasePath: '/docs/java',
-                      label: "java",
-                      position: "left",
-                  },
 
                     {
                         href: 'https://github.com/liJay010',
