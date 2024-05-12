@@ -19,7 +19,7 @@
         	}
         }
     */
-
+  
     class Outer {
         public class Inner {
             
@@ -108,13 +108,13 @@
             public void show(){
                 System.out.println("inner..show");
             }
-
+    
             public static void method(){
                 System.out.println("inner..method");
             }
         }
     }
-
+    
     public class Test3Innerclass {
         /*
             静态成员内部类演示
@@ -123,7 +123,7 @@
             // 外部类名.内部类名 对象名 = new 外部类名.内部类名();
             Outer.Inner oi = new Outer.Inner();
             oi.show();
-
+    
             Outer.Inner.method();
         }
     }
@@ -163,7 +163,7 @@
           o.method();
       }
   }
-
+  
   ```
 
 ### 1.4 匿名内部类（应用）
@@ -208,7 +208,7 @@
   interface Inter{
       void method();
   }
-
+  
   class Test{
       public static void main(String[] args){
           new Inter(){
@@ -236,7 +236,7 @@
   interface Swimming {
       void swim();
   }
-
+  
   public class TestSwimming {
       public static void main(String[] args) {
           goSwimming(new Swimming() {
@@ -246,7 +246,7 @@
               }
           });
       }
-
+  
       /**
        * 使用接口的方法
        */
@@ -365,7 +365,7 @@
           //在主方法中调用useEatable方法
           Eatable e = new EatableImpl();
           useEatable(e);
-
+  
           //匿名内部类
           useEatable(new Eatable() {
               @Override
@@ -373,13 +373,13 @@
                   System.out.println("一天一苹果，医生远离我");
               }
           });
-
+  
           //Lambda表达式
           useEatable(() -> {
               System.out.println("一天一苹果，医生远离我");
           });
       }
-
+  
       private static void useEatable(Eatable e) {
           e.eat();
       }
@@ -405,7 +405,7 @@
   public interface Flyable {
       void fly(String s);
   }
-
+  
   public class FlyableDemo {
       public static void main(String[] args) {
           //在主方法中调用useFlyable方法
@@ -418,15 +418,15 @@
               }
           });
           System.out.println("--------");
-
+  
           //Lambda
           useFlyable((String s) -> {
               System.out.println(s);
               System.out.println("飞机自驾游");
           });
-
+  
       }
-
+  
       private static void useFlyable(Flyable f) {
           f.fly("风和日丽，晴空万里");
       }
@@ -452,16 +452,16 @@
   public interface Addable {
       int add(int x,int y);
   }
-
+  
   public class AddableDemo {
       public static void main(String[] args) {
           //在主方法中调用useAddable方法
           useAddable((int x,int y) -> {
               return x + y;
           });
-
+  
       }
-
+  
       private static void useAddable(Addable a) {
           int sum = a.add(10, 20);
           System.out.println(sum);
@@ -483,11 +483,11 @@
   public interface Addable {
       int add(int x, int y);
   }
-
+  
   public interface Flyable {
       void fly(String s);
   }
-
+  
   public class LambdaDemo {
       public static void main(String[] args) {
   //        useAddable((int x,int y) -> {
@@ -497,7 +497,7 @@
           useAddable((x, y) -> {
               return x + y;
           });
-
+  
   //        useFlyable((String s) -> {
   //            System.out.println(s);
   //        });
@@ -505,18 +505,18 @@
   //        useFlyable(s -> {
   //            System.out.println(s);
   //        });
-
+  
           //如果代码块的语句只有一条，可以省略大括号和分号
           useFlyable(s -> System.out.println(s));
-
+  
           //如果代码块的语句只有一条，可以省略大括号和分号，如果有return，return也要省略掉
           useAddable((x, y) -> x + y);
       }
-
+  
       private static void useFlyable(Flyable f) {
           f.fly("风和日丽，晴空万里");
       }
-
+  
       private static void useAddable(Addable a) {
           int sum = a.add(10, 20);
           System.out.println(sum);
@@ -554,34 +554,6 @@
   ​	指的就是 JDK 中提供的各种功能的 Java类，这些类将底层的实现封装了起来，我们不需要关心这些类是如何实现的，只需要学习这些类如何使用即可，我们可以通过帮助文档来学习这些API如何使用。
 
 ### 3.2 如何使用API帮助文档【应用】
-
-- 打开帮助文档
-
-![01](E:/%E8%B0%83%E6%95%B4%E4%B9%8B%E5%90%8E%E7%9A%84%E8%A7%86%E9%A2%912/day04-%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1&API/%E7%AC%94%E8%AE%B0/img/01.png)
-
-- 找到索引选项卡中的输入框
-
-![02](E:/%E8%B0%83%E6%95%B4%E4%B9%8B%E5%90%8E%E7%9A%84%E8%A7%86%E9%A2%912/day04-%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1&API/%E7%AC%94%E8%AE%B0/img/02.png)
-
-- 在输入框中输入Random
-
-![03](E:/%E8%B0%83%E6%95%B4%E4%B9%8B%E5%90%8E%E7%9A%84%E8%A7%86%E9%A2%912/day04-%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1&API/%E7%AC%94%E8%AE%B0/img/03.png)
-
-- 看类在哪个包下
-
-![04](E:/%E8%B0%83%E6%95%B4%E4%B9%8B%E5%90%8E%E7%9A%84%E8%A7%86%E9%A2%912/day04-%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1&API/%E7%AC%94%E8%AE%B0/img/04.png)
-
-- 看类的描述
-
-![05](E:/%E8%B0%83%E6%95%B4%E4%B9%8B%E5%90%8E%E7%9A%84%E8%A7%86%E9%A2%912/day04-%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1&API/%E7%AC%94%E8%AE%B0/img/05.png)
-
-- 看构造方法
-
-![06](E:/%E8%B0%83%E6%95%B4%E4%B9%8B%E5%90%8E%E7%9A%84%E8%A7%86%E9%A2%912/day04-%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1&API/%E7%AC%94%E8%AE%B0/img/06.png)
-
-- 看成员方法
-
-![07](E:/%E8%B0%83%E6%95%B4%E4%B9%8B%E5%90%8E%E7%9A%84%E8%A7%86%E9%A2%912/day04-%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1&API/%E7%AC%94%E8%AE%B0/img/07.png)
 
 ## 4.常用API
 
