@@ -86,7 +86,7 @@ const config = {
                 items: [
                     {
                         to: "/docs/leetcode/随想录/投递记录",
-                        activeBasePath: '/docs/leetcode/随想录',
+                        activeBasePath: '/docs/leetcode/投递记录',
                         label: "leetcode",
                         position: "left",
                     },
