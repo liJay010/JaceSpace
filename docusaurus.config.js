@@ -84,6 +84,18 @@ const config = {
                     src: 'img/logo.svg',
                 },
                 items: [
+                  {
+                        to: "/docs/Bigmodel/大模型基础/大模型基础",
+                        activeBasePath: '/docs/Bigmodel/大模型基础/大模型基础',
+                        label: "Bigmodel",
+                        position: "left",
+                    },
+                    {
+                        to: "/docs/Android/安卓开发/安卓开发",
+                        activeBasePath: '/docs/Android/安卓开发/安卓开发',
+                        label: "Android",
+                        position: "left",
+                    },
                     {
                         to: "/docs/leetcode/随想录/数组链表",
                         activeBasePath: '/docs/leetcode/数组链表',
